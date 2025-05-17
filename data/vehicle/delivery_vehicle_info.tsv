@@ -1,0 +1,7 @@
+Service	Model	Volume(L)	Length(mm)	Width(mm)	Height(mm)	Payload(lbs)	Range(mi)
+Regular	Rivian 500	487000	3487	1787	2015	2663	161
+Regular	Rivian 700	652000	4237	1967	2015	2258	160
+Same-Day	Compact Sedan	300				700	200
+Same-Day	Midsize Sedan	500				900	200
+Same-Day	Midsize SUV	600				1200	200
+Same-Day	Fullsize SUV	800				1400	200
