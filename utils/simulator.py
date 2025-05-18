@@ -1,8 +1,9 @@
-import uuid
 import json
+import uuid
+from functools import partial
+
 import numpy as np
 import pandas as pd
-from functools import partial
 
 
 class OrderGenerator:
