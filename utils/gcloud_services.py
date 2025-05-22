@@ -7,7 +7,7 @@ import requests
 VALID_ROUTING_PREFS = ["TRAFFIC_UNAWARE", "TRAFFIC_AWARE", "TRAFFIC_AWARE_OPTIMAL"]
 
 
-class GMaps:
+class Route:
     def __init__(self, api_key=None):
         self.base_url = "https://routes.googleapis.com/directions/v2:computeRoutes"
         self.api_key = api_key or os.getenv("GMAPS_API_KEY")
@@ -100,13 +100,3 @@ class GMaps:
 
         return {"distance_meters": distance, "duration_seconds": duration}
 
-
-class GWeather:
-    def __init__(self, api_key=None):
-        self.base_url = "https://weather.googleapis.com/v1/weather:computeWeather"
-        self.api_key = api_key or os.getenv("GWEATHER_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "API key is required. Set it as an environment variable or pass it directly"
-            )
-        # TODO: Implement the rest of the class
