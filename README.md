@@ -41,9 +41,11 @@ WIP
 
 - $t_{i, j}$: travel time from $i$ to $j$.
 - $\hat{t}_j$: stopover time at address $j$.
+- $d_{i, j}$: distance from $i$ to $j$.
 - $w_i, v_i$: weight and volume of package $i$.
 - $W_k, V_k$: weight and volume capacity of vehicle $k$.
 - $P_i$: priority score for address $i$, calculated by the order waiting time (see below)
+- $D_k$: maximum cruising range of vehicle $k$.
 - $T$: maximum driver duty time.
 - $K$: total number of available trucks.
 - $N$: total number of distinct addresses in the order list.
@@ -65,10 +67,13 @@ WIP
                         \quad \forall k & \text{(3)} \cr
                     &\space u_{i, k} + 1 \le u_{j, k} + N \cdot (1 - x_{i, j, k}),
                         \quad \forall i \neq j, k & \text{(4)} \cr
+                    &\space \sum_{i=0}^N\sum_{j=0}^N (t_{i, j}x_{i, j, k}
+                        + \hat{t}_{j}y_{j, k}) \le T,
+                        \quad \forall k & \text{(5)} \cr
+                    &\space \sum_{i=0}^N\sum_{j=0}^N (d_{i, j}x_{i, j, k} \le D_k),
+                        \quad \forall k & \text{(6)} \cr
                     &\space \sum_{k=1}^K y_{i, k} \le 1,
-                        \quad \forall i & \text{(5)} \cr
-                    &\space \sum_{k=1}^K\sum_{i=0}^N\sum_{j=0}^N (t_{i, j}x_{i, j, k}
-                        + \hat{t}_{j}y_{j, k}) \le T & \text{(6)}
+                        \quad \forall i & \text{(7)} \cr
 \end{aligned}
 ```
 
@@ -81,12 +86,14 @@ WIP
 3. Depot visits in the route:\
     If truck $k$ is used, then it leaves and returns to the depot once.
 4. Subtour Elimination (Miller-Tucker-Zemlin):\
-    Prevent disconnected loops by constraining on the order of visiting time.
+    Prevent disconnected loops by constraining on the order of visiting time.\
     See [Wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Miller%E2%80%93Tucker%E2%80%93Zemlin_formulation).
-5. Single visit to each stop:\
-    Each stop cannot be visited more than one times. Otherwise it's inefficient.
-6. Duty time:\
+5. Duty time:\
     The total traveling time + stopover time cannot exceed the driver's maximum duty time.
+6. Maximum distance:\
+    The traveling distance from depot along the scheduled stops back to the depot could not exceed the vehicle $k$'s cruising range.
+7. Single visit to each stop:\
+    Each stop cannot be visited more than one times. Otherwise it's inefficient.
 
 ### Multi-Depot VRP
 
