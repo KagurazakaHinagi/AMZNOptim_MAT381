@@ -1,0 +1,58 @@
+{
+    "Regular": {
+        "Rivian 500": {
+            "Weight_capacity": 1207.9179,
+            "Volume_capacity": 487.0,
+            "Max_distance": 259.10374
+        },
+        "Rivian 700": {
+            "Weight_capacity": 1024.2128,
+            "Volume_capacity": 652.0,
+            "Max_distance": 257.4944
+        }
+    },
+    "Prime Now": {
+        "Compact Sedan": {
+            "Weight_capacity": 317.515,
+            "Volume_capacity": 0.3,
+            "Max_distance": 321.868
+        },
+        "Midsize Sedan": {
+            "Weight_capacity": 408.2336,
+            "Volume_capacity": 0.5,
+            "Max_distance": 321.868
+        },
+        "Midsize SUV": {
+            "Weight_capacity": 544.3115,
+            "Volume_capacity": 0.6,
+            "Max_distance": 321.868
+        },
+        "Fullsize SUV": {
+            "Weight_capacity": 635.0301,
+            "Volume_capacity": 0.8,
+            "Max_distance": 321.868
+        }
+    },
+    "Amazon Fresh": {
+        "Compact Sedan": {
+            "Weight_capacity": 317.515,
+            "Volume_capacity": 0.3,
+            "Max_distance": 321.868
+        },
+        "Midsize Sedan": {
+            "Weight_capacity": 408.2336,
+            "Volume_capacity": 0.5,
+            "Max_distance": 321.868
+        },
+        "Midsize SUV": {
+            "Weight_capacity": 544.3115,
+            "Volume_capacity": 0.6,
+            "Max_distance": 321.868
+        },
+        "Fullsize SUV": {
+            "Weight_capacity": 635.0301,
+            "Volume_capacity": 0.8,
+            "Max_distance": 321.868
+        }
+    }
+}

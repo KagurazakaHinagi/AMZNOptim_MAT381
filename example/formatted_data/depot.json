@@ -1,0 +1,13 @@
+[
+    {
+        "id": "DWA2",
+        "zipcode": "98168",
+        "services": ["Regular", "Prime Now"],
+        "address": "2871 S 102nd St, Tukwila, WA, 98168",
+        "vehicles" : {
+            "Rivian 500" : 2,
+            "Rivian 700" : 1,
+            "Compact Sedan" : 5
+        }
+    }
+]
