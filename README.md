@@ -32,10 +32,10 @@ WIP
 
 #### Decision Variables
 
-- $x_{i, j, k} \in \{0, 1\}$: truck $k$ travels directly from $i$ to $j$.
-- $y_{i, k} \in \{0, 1\}$: node $i$ is served by truck $k$.
+- $x_{i, j, k} \in \\{0, 1\\}$: truck $k$ travels directly from $i$ to $j$.
+- $y_{i, k} \in \\{0, 1\\}$: node $i$ is served by truck $k$.
 - $u_{i, k} \ge 0$: "timestamp" when truck $k$ arrives at node $i$.
-- $z_{k} \in \{0, 1\}$: truck $k$ is used.
+- $z_{k} \in \\{0, 1\\}$: truck $k$ is used.
 
 #### Parameters
 
@@ -50,26 +50,27 @@ WIP
 
 #### Objective and constraints
 
-$$
-\begin{align}
+```math
+\begin{aligned}
     \text{minimize} &\space \sum_{k=1}^{K}\sum_{i=0}^N\sum_{j=0}^N (t_{i, j}x_{i, j, k}
                         +\hat{t}_{j} y_{j, k})
                         -\alpha \sum_{k=1}^K\sum_{i=1}^N P_iy_{i, k}
-                        +\beta \sum_{k=1}^K z_k \nonumber \cr
+                        +\beta \sum_{k=1}^K z_k & \cr
     \text{s.t.}     &\space \sum_{j=0}^N x_{i, j, k}=y_{i, k}=\sum_{j=0}^N x_{j, i, k},
-                        \quad \forall i, k \cr
+                        \quad \forall i, k & \text{(1)} \cr
                     &\space \sum_{i=1}^N w_{i}y_{i, k} \le W_k,
                         \quad \sum_{i=1}^N v_{i}y_{i, k} \le V_k,
-                        \quad \forall k \cr
+                        \quad \forall k & \text{(2)} \cr
                     &\space \sum_{j=1}^N x_{0, j, k} = \sum_{i=1}^N x_{i, 0, k} = z_k,
-                        \quad \forall k \cr
+                        \quad \forall k & \text{(3)} \cr
                     &\space u_{i, k} + 1 \le u_{j, k} + N \cdot (1 - x_{i, j, k}),
-                        \quad \forall i \neq j, k \cr
+                        \quad \forall i \neq j, k & \text{(4)} \cr
                     &\space \sum_{k=1}^K y_{i, k} \le 1,
-                        \quad \forall i \cr
-                    &\space \sum_{k=1}^K\sum_{i=0}^N\sum_{j=0}^N (t_{i, j}x_{i, j, k} + \hat{t}_{j}y_{j, k}) \le T
-\end{align}
-$$
+                        \quad \forall i & \text{(5)} \cr
+                    &\space \sum_{k=1}^K\sum_{i=0}^N\sum_{j=0}^N (t_{i, j}x_{i, j, k}
+                        + \hat{t}_{j}y_{j, k}) \le T & \text{(6)}
+\end{aligned}
+```
 
 ##### Explanation of constraints
 
