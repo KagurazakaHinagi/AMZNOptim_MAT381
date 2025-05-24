@@ -11,11 +11,12 @@ class OrderGenerator:
     Abstract class to generate random orders.
     """
 
-    def __init__(self, n: int):
-        self.n = n
+    def __init__(self, n_address: int, n_package: int):
+        self.n_address = n_address
+        self.n_package = n_package
         self.rng = np.random.default_rng()
-        self.package_generator = RandomPackageGenerator(n)
-        self.address_sampler = RandomAddressSampler(n)
+        self.address_sampler = RandomAddressSampler(n_address)
+        self.package_generator = RandomPackageGenerator(n_package)
         self.max_hours_from_now = 24
 
     def random_datetime(self, hours_from_now):
@@ -26,7 +27,7 @@ class OrderGenerator:
         end_time = now - pd.Timedelta(hours=hours_from_now)
         timestamps = []
         timestamps_formatted = []
-        for _ in range(self.n):
+        for _ in range(self.n_package):
             timestamps.append(self.rng.integers(end_time.value, now.value))
             timestamps_formatted.append(pd.Timestamp(timestamps[-1]))
         return timestamps, timestamps_formatted
@@ -47,12 +48,23 @@ class OrderGenerator:
         addresses = self.address_sampler.sample(
             save_path=save_path, address_list_file=kwargs.get("address_list_file")
         )
-        orders = pd.concat([packages, addresses], axis=1)
-        orders["order_id"] = [uuid.uuid4() for _ in range(len(orders))]
+        if len(packages) > len(addresses):
+            addresses = addresses.sample(
+                n=len(packages), replace=True, random_state=self.rng
+            ).reset_index(drop=True)
+        elif len(packages) < len(addresses):
+            raise ValueError(
+                "Number of packages is less than number of addresses."
+            )
+
         max_hours_from_now = max_hours_from_now or self.max_hours_from_now
-        orders["order_timestamp"], orders["order_time"] = self.random_datetime(
+        orders = pd.DataFrame()
+        orders["order_id"] = [uuid.uuid4() for _ in range(len(packages))]
+        orders["order_timestamp"], _ = self.random_datetime(
             max_hours_from_now
         )
+        orders = pd.concat([orders, addresses, packages], axis=1)
+        orders.set_index("order_id", inplace=True)
         return orders
 
     def _save(self, orders, output_file):
@@ -68,8 +80,8 @@ class RegularOrderGenerator(OrderGenerator):
     Class to generate random regular Amazon orders.
     """
 
-    def __init__(self, n: int):
-        super().__init__(n)
+    def __init__(self, n_address: int, n_package: int):
+        super().__init__(n_address, n_package)
         self.max_hours_from_now = 120
 
     def generate(self, max_hours_from_now=None, save_path=None, **kwargs):
@@ -83,15 +95,15 @@ class RegularOrderGenerator(OrderGenerator):
 
 
 class SameDayOrderGenerator(OrderGenerator):
-    def __init__(self, n: int):
-        super().__init__(n)
+    def __init__(self, n_address: int, n_package: int):
+        super().__init__(n_address, n_package)
 
     # TODO: Implement same day order generation
 
 
 class FreshOrderGenerator(OrderGenerator):
-    def __init__(self, n: int):
-        super().__init__(n)
+    def __init__(self, n_address: int, n_package: int):
+        super().__init__(n_address, n_package)
 
     # TODO: Implement fresh order generation
 
@@ -126,7 +138,7 @@ class RandomAddressSampler:
         """
         Format addresses into a DataFrame.
         """
-        formatted_addresses = pd.DataFrame(columns=["stop_id", "address"])
+        formatted_addresses = pd.DataFrame(columns=["customer_id", "address"])
         for line in addresses:
             address = json.loads(line)
             address_id = address["properties"]["hash"]
@@ -145,7 +157,7 @@ class RandomAddressSampler:
                 [
                     formatted_addresses,
                     pd.DataFrame(
-                        {"stop_id": [address_id], "address": [formatted_address]}
+                        {"customer_id": [address_id], "address": [formatted_address]}
                     ),
                 ],
                 ignore_index=True,
@@ -169,23 +181,6 @@ class RandomPackageGenerator:
         self.rng = np.random.default_rng()
         self.sampling_dist = partial(self.rng.lognormal, mean=np.log(2), sigma=1)
 
-    def load_dimension(self, dimension_tsv):
-        """
-        Load package dimensions from a TSV file.
-        """
-        df = pd.read_csv(dimension_tsv, sep="\t")
-        df.drop(columns=["Volume(cubic in)"], inplace=True)
-        df.rename(
-            columns={
-                "Model": "package_type",
-                "Length(in)": "length",
-                "Width(in)": "width",
-                "Depth(in)": "depth",
-            },
-            inplace=True,
-        )
-        return df
-
     def generate(
         self, dimension_tsv, sampling_dist=None, save_path=None
     ) -> pd.DataFrame:
@@ -194,10 +189,10 @@ class RandomPackageGenerator:
         """
         sampling_dist = sampling_dist or self.sampling_dist
         weights = sampling_dist(size=self.n)
-        dimensions = self.load_dimension(dimension_tsv)
-        packages = dimensions.sample(self.n, replace=True).reset_index(drop=True)
-        packages["weight"] = weights.round(2)
-        packages["package_id"] = [uuid.uuid4() for _ in range(len(packages))]
+        avail_package_types = pd.read_csv(dimension_tsv, sep="\t", usecols=[0])
+        packages = avail_package_types.sample(self.n, replace=True).reset_index(drop=True)
+        packages["packaging_weight"] = weights.round(2)
+        packages.columns.values[0] = "packaging_type"
         if save_path:
             self._save(packages, save_path)
         return packages
