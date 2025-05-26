@@ -24,10 +24,6 @@ class Route:
         """
         self.base_url = "https://routes.googleapis.com/directions/v2:computeRoutes"
         self.api_key = api_key or os.getenv("GMAPS_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "API key is required. Set it as an environment variable or pass it directly."
-            )
         self.headers = {
             "Content-Type": "application/json",
             "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
@@ -92,6 +88,10 @@ class Route:
         Validates the parameters before making the API request.
         Raises ValueError if any required parameter is missing.
         """
+        if not self.api_key:
+            raise ValueError(
+                "API key is required. Set it as an environment variable or pass it directly."
+            )
         if not self.headers["X-Goog-Api-Key"]:
             raise ValueError("API key is required.")
         if not self.params["origin"]:
@@ -196,6 +196,10 @@ class RouteMatrix(Route):
         Validates the parameters before making the API request.
         Raises ValueError if any required parameter is missing.
         """
+        if not self.api_key:
+            raise ValueError(
+                "API key is required. Set it as an environment variable or pass it directly."
+            )
         if not self.headers["X-Goog-Api-Key"]:
             raise ValueError("API key is required.")
         origins = self.params.get("origins", []) or []
