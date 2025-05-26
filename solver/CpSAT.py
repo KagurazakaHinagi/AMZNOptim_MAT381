@@ -2,8 +2,15 @@ import numpy as np
 import pandas as pd
 from ortools.sat.python import cp_model
 
+from amznoptim.utils.preprocess import (
+    compute_waiting_times,
+    fetch_route_matrix,
+    fetch_route_matrix_from_json,
+    fetch_vehicle_info,
+)
 
-class SingleDepotVRP:
+
+class SingleDepotVRPRegular:
     """Class to solve the Single Depot Vehicle Routing Problem (SDVRP) using Google OR-Tools.
 
     This class uses the Constraint Programming (CP) solver from Google OR-Tools to find an optimal
@@ -23,16 +30,17 @@ class SingleDepotVRP:
         preprocessed to use the metric system instead of imperial system.
         The first order in the list is considered as the depot. (not a real order)
     """
-    def __init__(self, depot_data: dict, stop_data: dict):
-        self.depot = depot_data
+
+    def __init__(self, depot_data: list[dict], stop_data: dict):
+        self.depot = depot_data[0]
         self.stops = stop_data
-        self.addresses = [depot_data["address"]] + list(self.stops.keys())
-        self.weights = [0] + [stop["weight"] for _, stop in self.stops]
-        self.volumes = [0] + [stop["volume"] for _, stop in self.stops]
-        self.vehicles = []
+        self.addresses = []
+        self.weights = []
+        self.volumes = []
         self.order_waiting_times = []
         self.route_durations = []
         self.route_distances = []
+        self.vehicles = []
         self.model = cp_model.CpModel()
         self.solver = cp_model.CpSolver()
         self.alpha = 0  # Hyperparameter: penalty of order waiting time
@@ -50,14 +58,55 @@ class SingleDepotVRP:
     def set_max_duty_time(self, max_duty_time: float):
         self.max_duty_time = max_duty_time
 
-    def fetch_vehicle_info(self, vehicle_data_path: str):
-        pass
+    def process_data(
+        self,
+        vehicle_data_path: str,
+        dept_time: pd.Timestamp | None = None,
+        matrix_json: str | None = None,
+        traffic_aware: bool = False,
+        api_key=None,
+    ):
+        self.process_stop_data(dept_time)
+        self.process_vehicle_data(vehicle_data_path)
+        self.process_route_data(
+            matrix_json=matrix_json,
+            traffic_aware=traffic_aware,
+            dept_time=dept_time,
+            api_key=api_key,
+        )
 
-    def fetch_route_info(self, api_key=None):
-        pass
+    def process_stop_data(self, dept_time: pd.Timestamp | None = None):
+        self.addresses = [self.depot["address"]] + [
+            stop["address"] for _, stop in self.stops.items()
+        ]
+        self.weights = [0] + [stop["total_weight"] for _, stop in self.stops.items()]
+        self.volumes = [0] + [stop["total_volume"] for _, stop in self.stops.items()]
+        self.order_waiting_times = [0]
+        dept_time = dept_time or pd.Timestamp.now()
+        stops_with_waiting_time = compute_waiting_times(self.stops, dept_time=dept_time)
+        for _, stop in stops_with_waiting_time.items():
+            self.order_waiting_times.append(stop["max_waiting_time"])
 
-    def fetch_route_info_from_csv(self, csv_path):
-        pass
+    def process_vehicle_data(self, vehicle_data_path: str):
+        self.vehicles = fetch_vehicle_info(self.depot, vehicle_data_path)
+
+    def process_route_data(
+        self,
+        matrix_json: str | None = None,
+        traffic_aware: bool = False,
+        dept_time: pd.Timestamp | None = None,
+        api_key=None,
+    ):
+        if matrix_json:
+            route_matrix = fetch_route_matrix_from_json(matrix_json, 1)
+            self.route_durations = route_matrix["duration_seconds"]
+            self.route_distances = route_matrix["distance_meters"]
+            return
+        route_matrix = fetch_route_matrix(
+            self.depot, self.stops, traffic_aware, dept_time, api_key=api_key
+        )
+        self.route_durations = route_matrix["duration_seconds"]
+        self.route_distances = route_matrix["distance_meters"]
 
     def validate(self):
         pass
