@@ -1,4 +1,4 @@
-Model	Length(in)	Width(in)	Height(in)	Volume(cubic in)
+Code	Length(in)	Width(in)	Height(in)	Volume(cubic in)
 0A0	9.25	6.5	2.25	135
 A0 (BR0)	10.25	7	2.25	161
 A1 (BH0, BY0, BYO)	10	7	3.25	227

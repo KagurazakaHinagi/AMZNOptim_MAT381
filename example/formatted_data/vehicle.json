@@ -1,58 +1,58 @@
 {
     "Regular": {
         "Rivian 500": {
-            "Weight_capacity": 1207.9179,
-            "Volume_capacity": 487.0,
-            "Max_distance": 259.10374
+            "Weight_capacity": 1207918,
+            "Volume_capacity": 487000000000,
+            "Max_distance": 259103
         },
         "Rivian 700": {
-            "Weight_capacity": 1024.2128,
-            "Volume_capacity": 652.0,
-            "Max_distance": 257.4944
+            "Weight_capacity": 1024213,
+            "Volume_capacity": 652000000000,
+            "Max_distance": 257494
         }
     },
     "Prime Now": {
         "Compact Sedan": {
-            "Weight_capacity": 317.515,
-            "Volume_capacity": 0.3,
-            "Max_distance": 321.868
+            "Weight_capacity": 317515,
+            "Volume_capacity": 300000000,
+            "Max_distance": 321868
         },
         "Midsize Sedan": {
-            "Weight_capacity": 408.2336,
-            "Volume_capacity": 0.5,
-            "Max_distance": 321.868
+            "Weight_capacity": 408233,
+            "Volume_capacity": 500000000,
+            "Max_distance": 321868
         },
         "Midsize SUV": {
-            "Weight_capacity": 544.3115,
-            "Volume_capacity": 0.6,
-            "Max_distance": 321.868
+            "Weight_capacity": 544311,
+            "Volume_capacity": 600000000,
+            "Max_distance": 321868
         },
         "Fullsize SUV": {
-            "Weight_capacity": 635.0301,
-            "Volume_capacity": 0.8,
-            "Max_distance": 321.868
+            "Weight_capacity": 635030,
+            "Volume_capacity": 800000000,
+            "Max_distance": 321868
         }
     },
     "Amazon Fresh": {
         "Compact Sedan": {
-            "Weight_capacity": 317.515,
-            "Volume_capacity": 0.3,
-            "Max_distance": 321.868
+            "Weight_capacity": 317515,
+            "Volume_capacity": 300000000,
+            "Max_distance": 321868
         },
         "Midsize Sedan": {
-            "Weight_capacity": 408.2336,
-            "Volume_capacity": 0.5,
-            "Max_distance": 321.868
+            "Weight_capacity": 408233,
+            "Volume_capacity": 500000000,
+            "Max_distance": 321868
         },
         "Midsize SUV": {
-            "Weight_capacity": 544.3115,
-            "Volume_capacity": 0.6,
-            "Max_distance": 321.868
+            "Weight_capacity": 544311,
+            "Volume_capacity": 600000000,
+            "Max_distance": 321868
         },
         "Fullsize SUV": {
-            "Weight_capacity": 635.0301,
-            "Volume_capacity": 0.8,
-            "Max_distance": 321.868
+            "Weight_capacity": 635030,
+            "Volume_capacity": 800000000,
+            "Max_distance": 321868
         }
     }
 }
