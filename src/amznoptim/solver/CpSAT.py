@@ -5,7 +5,6 @@ from ortools.sat.python import cp_model
 from amznoptim.utils.preprocess import (
     compute_waiting_times,
     fetch_route_matrix,
-    fetch_route_matrix_from_json,
     fetch_vehicle_info,
 )
 
@@ -45,17 +44,20 @@ class SingleDepotVRPRegular:
         self.solver = cp_model.CpSolver()
         self.alpha = 0  # Hyperparameter: penalty of order waiting time
         self.beta = 0  # Hyperparameter: penalty for using a vehicle
-        self.stopping_time = [0] * len(self.addresses)  # Stopping time at each order
-        self.max_duty_time = np.inf  # Maximum delivery time for each schedule
+        self.stopping_time = []  # Stopping time at each order
+        self.max_duty_time = 28800  # Maximum delivery time for each schedule
 
-    def set_hyperparams(self, *, alpha: float | None = None, beta: float | None = None):
+    def set_hyperparams(self, *, alpha: int | None = None, beta: int | None = None):
         self.alpha = alpha or self.alpha
         self.beta = beta or self.beta
 
-    def set_stopping_time(self, stopping_time: float):
-        self.stopping_time = stopping_time
+    def set_stopping_time(self, stopping_time: list[int] | int):
+        if isinstance(stopping_time, int):
+            self.stopping_time = [0] + [stopping_time] * (len(self.addresses) - 1)
+        else:
+            self.stopping_time = stopping_time
 
-    def set_max_duty_time(self, max_duty_time: float):
+    def set_max_duty_time(self, max_duty_time: int):
         self.max_duty_time = max_duty_time
 
     def process_data(
@@ -64,6 +66,7 @@ class SingleDepotVRPRegular:
         dept_time: pd.Timestamp | None = None,
         matrix_json: str | None = None,
         traffic_aware: bool = False,
+        save_path: str | None = None,
         api_key=None,
     ):
         self.process_stop_data(dept_time)
@@ -73,6 +76,7 @@ class SingleDepotVRPRegular:
             traffic_aware=traffic_aware,
             dept_time=dept_time,
             api_key=api_key,
+            save_path=save_path,
         )
 
     def process_stop_data(self, dept_time: pd.Timestamp | None = None):
@@ -86,6 +90,7 @@ class SingleDepotVRPRegular:
         stops_with_waiting_time = compute_waiting_times(self.stops, dept_time=dept_time)
         for _, stop in stops_with_waiting_time.items():
             self.order_waiting_times.append(stop["max_waiting_time"])
+        self.stopping_time = [0] * len(self.addresses)
 
     def process_vehicle_data(self, vehicle_data_path: str):
         self.vehicles = fetch_vehicle_info(self.depot, vehicle_data_path)
@@ -95,15 +100,17 @@ class SingleDepotVRPRegular:
         matrix_json: str | None = None,
         traffic_aware: bool = False,
         dept_time: pd.Timestamp | None = None,
+        save_path: str | None = None,
         api_key=None,
     ):
-        if matrix_json:
-            route_matrix = fetch_route_matrix_from_json(matrix_json, 1)[0]
-            self.route_durations = route_matrix["duration_seconds"]
-            self.route_distances = route_matrix["distance_meters"]
-            return
         route_matrix = fetch_route_matrix(
-            self.depot, self.stops, traffic_aware, dept_time, api_key=api_key
+            [self.depot],
+            self.stops,
+            traffic_aware,
+            dept_time,
+            matrix_json,
+            save_path,
+            api_key=api_key,
         )[0]
         self.route_durations = route_matrix["duration_seconds"]
         self.route_distances = route_matrix["distance_meters"]
@@ -171,22 +178,22 @@ class SingleDepotVRPRegular:
             # Constraint 5: Maximum duty time
             # The total travel time and stopover time must not exceed
             # the maximum duty time of the driver
-            travel_time = sum(
-                self.route_durations[i][j] * x[i, j, k]
+            travel_time = [
+                int(self.route_durations[i][j]) * x[i, j, k]
                 for i in range(num_nodes)
                 for j in range(num_nodes)
                 if i != j
-            )
-            stopover_time = sum(
-                self.stopping_time * y[j, k] for j in range(1, num_nodes)
-            )
-            self.model.Add(travel_time + stopover_time <= self.max_duty_time)
+            ]
+            stopover_time = [
+                int(self.stopping_time[j]) * y[j, k] for j in range(1, num_nodes)
+            ]
+            self.model.Add(sum(travel_time) + sum(stopover_time) <= self.max_duty_time)
             # Constraint 6: Maximum distance
             # The total travel distance must not exceed the maximum cruising
             # distance of the vehicle
             self.model.Add(
                 sum(
-                    self.route_distances[i][j] * x[i, j, k]
+                    int(self.route_distances[i][j]) * x[i, j, k]
                     for i in range(num_nodes)
                     for j in range(num_nodes)
                     if i != j
@@ -222,7 +229,7 @@ class SingleDepotVRPRegular:
         status = self.solver.Solve(self.model)
 
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-            return self.solver.Value
+            return self.solver
         raise ValueError("No feasible solution found.")
 
     def interpret_solution(self, solution, save_path=None):

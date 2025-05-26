@@ -17,7 +17,7 @@ def stop_info_from_orders(order_csv: str, packaging_info_tsv: str) -> dict:
                 "order": [
                     {
                         "id": i,
-                        "timestamp": row["timestamp"],
+                        "timestamp": row["order_timestamp"],
                         "package_weight": row["packaging_weight"],
                         "package_volume": package_volume,
                         "package_dimension": package_dimension,
@@ -28,7 +28,7 @@ def stop_info_from_orders(order_csv: str, packaging_info_tsv: str) -> dict:
             stop_data[row["customer_id"]]["order"].append(
                 {
                     "id": i,
-                    "timestamp": row["timestamp"],
+                    "timestamp": row["order_timestamp"],
                     "package_weight": row["packaging_weight"],
                     "package_volume": package_volume,
                     "package_dimension": package_dimension,
@@ -47,7 +47,7 @@ def compute_waiting_times(stop_data: dict, dept_time: pd.Timestamp) -> dict:
     for _, stop in stop_data.items():
         stop["max_waiting_time"] = 0
         for order in stop["order"]:
-            order_time = order["timestamp"] - dept_time
+            order_time = pd.to_datetime(order["timestamp"]) - dept_time
             stop["max_waiting_time"] = max(
                 stop["max_waiting_time"], order_time.total_seconds()
             )
@@ -57,21 +57,22 @@ def compute_waiting_times(stop_data: dict, dept_time: pd.Timestamp) -> dict:
 def fetch_packaging_info(packaging_type: str, packaging_info_tsv: str):
     """Fetches packaging information from the TSV file."""
     df = pd.read_csv(packaging_info_tsv, sep="\t")
-    length = df.loc[df["packaging_type"] == packaging_type, "Length(in)"].values[0]
-    length = length * 0.0254  # Convert inches to meters
-    width = df.loc[df["packaging_type"] == packaging_type, "Width(in)"].values[0]
-    width = width * 0.0254  # Convert inches to meters
-    height = df.loc[df["packaging_type"] == packaging_type, "Height(in)"].values[0]
-    height = height * 0.0254  # Convert inches to meters
+    length = df.loc[df["Code"] == packaging_type, "Length(in)"].values[0]
+    length = int(length * 254)  # Convert inches to mm
+    width = df.loc[df["Code"] == packaging_type, "Width(in)"].values[0]
+    width = int(width * 254)  # Convert inches to mm
+    height = df.loc[df["Code"] == packaging_type, "Height(in)"].values[0]
+    height = int(height * 254)  # Convert inches to mm
     volume = length * width * height
     return (volume, (length, width, height))
 
 
 def fetch_route_matrix(
-    depot_data: dict,
+    depot_data: list[dict],
     stop_data: dict,
     traffic_aware: bool = False,
     dept_time: pd.Timestamp | None = None,
+    matrix_json: str | None = None,
     save_path: str | None = None,
     api_key=None,
 ) -> tuple[dict, int]:
@@ -80,7 +81,7 @@ def fetch_route_matrix(
 
     matrix_service = RouteMatrix(api_key=api_key)
     stop_addresses = [stop["address"] for stop in stop_data.values()]
-    depot_addresses = [depot["address"] for depot in depot_data.values()]
+    depot_addresses = [depot["address"] for depot in depot_data]
     addresses = depot_addresses + stop_addresses
     matrix_service.set_origins(addresses)
     matrix_service.set_destinations(addresses)
@@ -92,21 +93,15 @@ def fetch_route_matrix(
         matrix_service.set_departure_time(
             dept_time=dept_time, routing_pref="TRAFFIC_AWARE_OPTIMAL"
         )
-    service_result = matrix_service.get_route()
+    if not matrix_json:
+        service_result = matrix_service.get_route()
+    else:
+        with open(matrix_json, "r") as f:
+            service_result = json.load(f)
     if save_path:
         with open(save_path, "w") as f:
             json.dump(service_result, f, indent=4)
     return matrix_service.process_route(service_result), len(depot_data)
-
-
-def fetch_route_matrix_from_json(matrix_json: str, depot_cnt: int) -> tuple[dict, int]:
-    """Fetches the route matrix from a JSON file."""
-    from amznoptim.utils.gmaps_service import RouteMatrix
-
-    with open(matrix_json, "r") as f:
-        route_matrix = json.load(f)
-    matrix_service = RouteMatrix(api_key=None)
-    return matrix_service.process_route(route_matrix), depot_cnt
 
 
 def fetch_vehicle_info(
