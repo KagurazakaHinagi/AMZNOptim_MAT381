@@ -188,7 +188,7 @@ class RandomPackageGenerator:
         Generate random package information, simulate given distribution.
         """
         sampling_dist = sampling_dist or self.sampling_dist
-        weights = sampling_dist(size=self.n)
+        weights = sampling_dist(size=self.n) * 0.453592 # Convert lbs to kg
         avail_package_types = pd.read_csv(dimension_tsv, sep="\t", usecols=[0])
         packages = avail_package_types.sample(self.n, replace=True).reset_index(drop=True)
         packages["packaging_weight"] = weights.round(2)
