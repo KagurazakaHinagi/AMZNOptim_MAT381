@@ -156,7 +156,9 @@ class RouteMatrix(Route):
         https://developers.google.com/maps/documentation/routes/reference/rest/v2/TopLevel/computeRouteMatrix
         """
         super().__init__(api_key)
-        self.base_url = "https://routes.googleapis.com/directions/v2:computeRouteMatrix"
+        self.base_url = (
+            "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
+        )
         self.params = {
             "origins": [],
             "destinations": [],
@@ -190,9 +192,16 @@ class RouteMatrix(Route):
         ]
 
     def validate_params(self):
-        super().validate_params()
+        """
+        Validates the parameters before making the API request.
+        Raises ValueError if any required parameter is missing.
+        """
+        if not self.headers["X-Goog-Api-Key"]:
+            raise ValueError("API key is required.")
         origins = self.params.get("origins", []) or []
         destinations = self.params.get("destinations", []) or []
+        if not origins or not destinations:
+            raise ValueError("Both origins and destinations must be set.")
         if len(origins) + len(destinations) > 650:
             raise IndexError(
                 "The total number of origins and destinations must not exceed 650."
@@ -216,8 +225,14 @@ class RouteMatrix(Route):
             origin_index = entry["originIndex"]
             destination_index = entry["destinationIndex"]
             if entry["condition"] == "ROUTE_EXISTS":
-                time_matrix[origin_index][destination_index] = entry["duration"]
-                dist_matrix[origin_index][destination_index] = entry["distanceMeters"]
+                duration = int(entry["duration"][:-1])
+                time_matrix[origin_index][destination_index] = duration
+                if duration == 0:
+                    dist_matrix[origin_index][destination_index] = 0
+                else:
+                    dist_matrix[origin_index][destination_index] = entry[
+                        "distanceMeters"
+                    ]
             else:
                 time_matrix[origin_index][destination_index] = np.inf
                 dist_matrix[origin_index][destination_index] = np.inf
