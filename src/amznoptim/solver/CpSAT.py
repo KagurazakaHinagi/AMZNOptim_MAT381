@@ -98,13 +98,13 @@ class SingleDepotVRPRegular:
         api_key=None,
     ):
         if matrix_json:
-            route_matrix = fetch_route_matrix_from_json(matrix_json, 1)
+            route_matrix = fetch_route_matrix_from_json(matrix_json, 1)[0]
             self.route_durations = route_matrix["duration_seconds"]
             self.route_distances = route_matrix["distance_meters"]
             return
         route_matrix = fetch_route_matrix(
             self.depot, self.stops, traffic_aware, dept_time, api_key=api_key
-        )
+        )[0]
         self.route_durations = route_matrix["duration_seconds"]
         self.route_distances = route_matrix["distance_meters"]
 

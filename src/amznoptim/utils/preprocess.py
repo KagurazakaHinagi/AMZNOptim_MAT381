@@ -1,6 +1,7 @@
-import numpy as np
-import pandas as pd
 import json
+
+import pandas as pd
+
 
 def stop_info_from_orders(order_csv: str, packaging_info_tsv: str) -> dict:
     """Extracts stop information from orders CSV file."""
@@ -13,22 +14,26 @@ def stop_info_from_orders(order_csv: str, packaging_info_tsv: str) -> dict:
         if row["customer_id"] not in stop_data:
             stop_data[row["customer_id"]] = {
                 "address": row["address"],
-                "order": [{
+                "order": [
+                    {
+                        "id": i,
+                        "timestamp": row["timestamp"],
+                        "package_weight": row["packaging_weight"],
+                        "package_volume": package_volume,
+                        "package_dimension": package_dimension,
+                    }
+                ],
+            }
+        else:
+            stop_data[row["customer_id"]]["order"].append(
+                {
                     "id": i,
                     "timestamp": row["timestamp"],
                     "package_weight": row["packaging_weight"],
                     "package_volume": package_volume,
-                    "package_dimension": package_dimension
-                }]
-            }
-        else:
-            stop_data[row["customer_id"]]["order"].append({
-                "id": i,
-                "timestamp": row["timestamp"],
-                "package_weight": row["packaging_weight"],
-                "package_volume": package_volume,
-                "package_dimension": package_dimension
-            })
+                    "package_dimension": package_dimension,
+                }
+            )
     for stop in stop_data.values():
         total_weight = sum(order["package_weight"] for order in stop["order"])
         total_volume = sum(order["package_volume"] for order in stop["order"])
@@ -37,9 +42,7 @@ def stop_info_from_orders(order_csv: str, packaging_info_tsv: str) -> dict:
     return stop_data
 
 
-def compute_waiting_times(
-    stop_data: dict, dept_time: pd.Timestamp
-) -> dict:
+def compute_waiting_times(stop_data: dict, dept_time: pd.Timestamp) -> dict:
     """Computes maximum order waiting times for each stop."""
     for _, stop in stop_data.items():
         stop["max_waiting_time"] = 0
@@ -55,11 +58,11 @@ def fetch_packaging_info(packaging_type: str, packaging_info_tsv: str):
     """Fetches packaging information from the TSV file."""
     df = pd.read_csv(packaging_info_tsv, sep="\t")
     length = df.loc[df["packaging_type"] == packaging_type, "Length(in)"].values[0]
-    length = length * 0.0254 # Convert inches to meters
+    length = length * 0.0254  # Convert inches to meters
     width = df.loc[df["packaging_type"] == packaging_type, "Width(in)"].values[0]
-    width = width * 0.0254 # Convert inches to meters
+    width = width * 0.0254  # Convert inches to meters
     height = df.loc[df["packaging_type"] == packaging_type, "Height(in)"].values[0]
-    height = height * 0.0254 # Convert inches to meters
+    height = height * 0.0254  # Convert inches to meters
     volume = length * width * height
     return (volume, (length, width, height))
 
@@ -73,7 +76,8 @@ def fetch_route_matrix(
     api_key=None,
 ) -> tuple[dict, int]:
     """Fetches the route matrix for the stops using Google Maps API."""
-    from gmaps_service import RouteMatrix
+    from amznoptim.utils.gmaps_service import RouteMatrix
+
     matrix_service = RouteMatrix(api_key=api_key)
     stop_addresses = [stop["address"] for stop in stop_data.values()]
     depot_addresses = [depot["address"] for depot in depot_data.values()]
@@ -82,7 +86,9 @@ def fetch_route_matrix(
     matrix_service.set_destinations(addresses)
     if traffic_aware:
         if dept_time is None:
-            raise ValueError("Departure time must be provided for traffic-aware routing.")
+            raise ValueError(
+                "Departure time must be provided for traffic-aware routing."
+            )
         matrix_service.set_departure_time(
             dept_time=dept_time, routing_pref="TRAFFIC_AWARE_OPTIMAL"
         )
@@ -93,11 +99,10 @@ def fetch_route_matrix(
     return matrix_service.process_route(service_result), len(depot_data)
 
 
-def fetch_route_matrix_from_json(
-    matrix_json: str, depot_cnt: int
-) -> tuple[dict, int]:
+def fetch_route_matrix_from_json(matrix_json: str, depot_cnt: int) -> tuple[dict, int]:
     """Fetches the route matrix from a JSON file."""
-    from gmaps_service import RouteMatrix
+    from amznoptim.utils.gmaps_service import RouteMatrix
+
     with open(matrix_json, "r") as f:
         route_matrix = json.load(f)
     matrix_service = RouteMatrix(api_key=None)
