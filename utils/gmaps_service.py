@@ -189,23 +189,14 @@ class RouteMatrix(Route):
             {"waypoint": {"address": addr}} for addr in destinations
         ]
 
-    def get_route(self, full_ver: bool = False):
-        """
-        Fetches the route matrix information from the Google Maps Directions API.
-        If full_ver is True, fetches all available fields.
-        Otherwise, fetches only the distance and duration with indexes.
-        """
-        if full_ver:
-            self.headers["X-Goog-FieldMask"] = "*"
-        self.validate_params()
-        response = requests.post(self.base_url, headers=self.headers, json=self.params)
-
-        if response.status_code != 200:
-            raise Exception(f"Error: {response.status_code} - {response.text}")
-
-        data = response.json()
-
-        return data
+    def validate_params(self):
+        super().validate_params()
+        origins = self.params.get("origins", []) or []
+        destinations = self.params.get("destinations", []) or []
+        if len(origins) + len(destinations) > 650:
+            raise IndexError(
+                "The total number of origins and destinations must not exceed 650."
+            )
 
     def process_route(self, data):
         """
