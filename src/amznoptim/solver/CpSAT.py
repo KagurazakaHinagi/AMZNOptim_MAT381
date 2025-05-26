@@ -51,6 +51,9 @@ class SingleDepotVRPRegular:
         self.alpha = alpha or self.alpha
         self.beta = beta or self.beta
 
+    def set_solver_max_time(self, max_time: int):
+        self.solver.parameters.max_time_in_seconds = max_time
+
     def set_stopping_time(self, stopping_time: list[int] | int):
         if isinstance(stopping_time, int):
             self.stopping_time = [0] + [stopping_time] * (len(self.addresses) - 1)
@@ -118,7 +121,7 @@ class SingleDepotVRPRegular:
     def validate(self):
         pass
 
-    def solve(self):
+    def solve(self, save_path: str | None = None):
         num_nodes = len(self.addresses)
         # Decision variables
         x = {}  # x[i][j][k] = 1 if vehicle k travels from order i to order j directly
@@ -206,7 +209,7 @@ class SingleDepotVRPRegular:
             self.model.Add(sum(y[j, k] for k in range(len(self.vehicles))) == 1)
 
         # Objective: Minimize
-        # total travel time * factor + beta * truck usage - alpha * order waiting time
+        # total travel time + beta * truck usage - alpha * order waiting time
         time_cost = sum(
             self.route_durations[i][j] * x[i, j, k]
             for k in range(len(self.vehicles))
@@ -225,12 +228,57 @@ class SingleDepotVRPRegular:
         )
 
         # Solve the model
-        self.solver.parameters.max_time_in_seconds = 300
         status = self.solver.Solve(self.model)
 
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-            return self.solver
-        raise ValueError("No feasible solution found.")
+            routes = []
+            for k in range(len(self.vehicles)):
+                route = [0]
+                curr = 0
+                while True:
+                    nxt = next(
+                        (
+                            j
+                            for j in range(num_nodes)
+                            if j != curr and self.solver.Value(x[curr, j, k])
+                        ),
+                        None,
+                    )
+                    if nxt is None or nxt == 0:
+                        route.append(0)
+                        break
+                    route.append(nxt)
+                    curr = nxt
+                routes.append(route)
 
-    def interpret_solution(self, solution, save_path=None):
-        pass
+            # Calculate travel time and stopover time for the solution
+            total_travel_time = sum(
+                self.route_durations[i][j] * self.solver.Value(x[i, j, k])
+                for k in range(len(self.vehicles))
+                for i in range(num_nodes)
+                for j in range(num_nodes)
+                if i != j
+            )
+            total_stopover_time = sum(
+                self.stopping_time[j] * self.solver.Value(y[j, k])
+                for k in range(len(self.vehicles))
+                for j in range(1, num_nodes)
+            )
+
+            return {
+                "status": "optimal" if status == cp_model.OPTIMAL else "feasible",
+                "routes": routes,
+                "travel_time": total_travel_time,
+                "stopover_time": total_stopover_time,
+                "vehicle_usage": [
+                    self.solver.Value(z[k]) for k in range(len(self.vehicles))
+                ],
+                "priority_cost": sum(
+                    self.order_waiting_times[j] * self.solver.Value(y[j, k])
+                    for k in range(len(self.vehicles))
+                    for j in range(1, num_nodes)
+                ),
+                "total_cost": self.solver.ObjectiveValue(),
+                "solver": "CpSAT",
+            }
+        raise ValueError("No feasible solution found.")
