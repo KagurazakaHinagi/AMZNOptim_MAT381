@@ -30,9 +30,15 @@ class SingleDepotVRPRegular:
         The first order in the list is considered as the depot. (not a real order)
     """
 
-    def __init__(self, depot_data: list[dict], stop_data: dict):
+    def __init__(
+        self,
+        depot_data: list[dict],
+        order_data: list[dict],
+        address_data: dict[str, list[str]],
+    ):
         self.depot = depot_data[0]
-        self.stops = stop_data
+        self.orders = order_data
+        self.stops = address_data
         self.addresses = []
         self.weights = []
         self.volumes = []
@@ -72,7 +78,7 @@ class SingleDepotVRPRegular:
         save_path: str | None = None,
         api_key=None,
     ):
-        self.process_stop_data(dept_time)
+        self.process_order_data(dept_time)
         self.process_vehicle_data(vehicle_data_path)
         self.process_route_data(
             matrix_json=matrix_json,
@@ -82,17 +88,15 @@ class SingleDepotVRPRegular:
             save_path=save_path,
         )
 
-    def process_stop_data(self, dept_time: pd.Timestamp | None = None):
-        self.addresses = [self.depot["address"]] + [
-            stop["address"] for _, stop in self.stops.items()
-        ]
-        self.weights = [0] + [stop["total_weight"] for _, stop in self.stops.items()]
-        self.volumes = [0] + [stop["total_volume"] for _, stop in self.stops.items()]
-        self.order_waiting_times = [0]
+    def process_order_data(self, dept_time: pd.Timestamp | None = None):
         dept_time = dept_time or pd.Timestamp.now()
-        stops_with_waiting_time = compute_waiting_times(self.stops, dept_time=dept_time)
-        for _, stop in stops_with_waiting_time.items():
-            self.order_waiting_times.append(stop["max_waiting_time"])
+        order_data = compute_waiting_times(
+            self.orders, dept_time=dept_time
+        )
+        self.addresses = [self.depot["address"]] + self.stops["addresses"]
+        self.weights = [0] + [order["package_weight"] for order in order_data]
+        self.volumes = [0] + [order["package_volume"] for order in order_data]
+        self.order_waiting_times = [0] + [order["waiting_time"] for order in order_data]
         self.stopping_time = [0] * len(self.addresses)
 
     def process_vehicle_data(self, vehicle_data_path: str):
@@ -108,7 +112,7 @@ class SingleDepotVRPRegular:
     ):
         route_matrix = fetch_route_matrix(
             [self.depot],
-            self.stops,
+            self.addresses,
             traffic_aware,
             dept_time,
             matrix_json,
@@ -123,113 +127,141 @@ class SingleDepotVRPRegular:
 
     def solve(self, save_path: str | None = None):
         num_nodes = len(self.addresses)
+        num_packages = len(self.orders)
         # Decision variables
-        x = {}  # x[i][j][k] = 1 if vehicle k travels from order i to order j directly
-        y = {}  # y[j][k] = 1 if vehicle k serves order j
+        x = {}  # x[i][j][k] = 1 if vehicle k travels from stop i to stop j directly
+        y = {}  # y[o][k] = 1 if vehicle k serves order o
         z = {}  # z[k] = 1 if vehicle k is used
-        u = {}  # u[i][k] = arrival time of order i at vehicle k
+        u = {}  # u[i][k] = arrival time of stop i at vehicle k
         if not self.vehicles or not self.stops:
             raise ValueError("Vehicle or order information is not set.")
+
+        # Create decision variables
         for k, (weight_cap, volume_cap, cruising_dist) in enumerate(self.vehicles):
             z[k] = self.model.NewBoolVar(f"z_{k}")
             for i in range(num_nodes):
                 for j in range(num_nodes):
                     if i != j:
                         x[i, j, k] = self.model.NewBoolVar(f"x_{i}_{j}_{k}")
-            for j in range(1, num_nodes):
-                y[j, k] = self.model.NewBoolVar(f"y_{j}_{k}")
-                # Constraint 1.1: Routing
-                # If j is served by vehicle k, then there's one path to j from some i
-                self.model.Add(
-                    sum(x[i, j, k] for i in range(num_nodes) if i != j) == y[j, k]
-                )
-            # Constraint 1.2: Routing (Inflow and Outflow)
-            # Each order must be entered and exited exactly once
-            for h in range(1, num_nodes):
-                self.model.Add(
-                    sum(x[i, h, k] for i in range(num_nodes) if i != h)
-                    == sum(x[h, j, k] for j in range(num_nodes) if j != h)
-                )
-            # Constraint 2: Loading Capacity
-            # Vehicle k must not exceed its capacity (payload and volume limit)
-            self.model.Add(
-                sum(self.weights[j] * y[j, k] for j in range(1, num_nodes))
-                <= weight_cap
-            )
-            self.model.Add(
-                sum(self.volumes[j] * y[j, k] for j in range(1, num_nodes))
-                <= volume_cap
-            )
-            # Constraint 3: Depot Flow
-            # If vehicle k is used, then it must leave and return to the depot once
-            self.model.Add(
-                sum(x[0, j, k] for j in range(num_nodes) if j != 0) <= num_nodes * z[k]
-            )
-            self.model.Add(
-                sum(x[i, 0, k] for i in range(num_nodes) if i != 0) <= num_nodes * z[k]
-            )
-            # Constraint 4: Miller-Tucker-Zemlin (MTZ) Subtour Elimination
-            # See https://en.wikipedia.org/wiki/Travelling_salesman_problem
-            for i in range(num_nodes):
                 u[i, k] = self.model.NewIntVar(0, num_nodes, f"u_{i}_{k}")
+            for o in range(num_packages):
+                y[o, k] = self.model.NewBoolVar(f"y_{o}_{k}")
+
+        # Constraints
+        # Constraint 1: Routing
+        for k in range(len(self.vehicles)):
+            for o in range(num_packages):
+                stop_index = self.orders[o]["address_index"] + 1  # +1 for depot
+                # If package o is served by vehicle k, then there must be an incoming edge to the stop
+                self.model.Add(
+                    sum(x[i, stop_index, k] for i in range(num_nodes) if i != stop_index) >= y[o, k]
+                )
+
+            # Flow conservation (incoming flow = outgoing flow)
+            for h in range(num_nodes):
+                if h == 0: # Depot flow
+                    self.model.Add(
+                        sum(x[0, j, k] for j in range(1, num_nodes) if j != 0)  ==
+                        sum(x[i, 0, k] for i in range(1, num_nodes) if i != 0)
+                    )
+                else: # Non-depot flow
+                    self.model.Add(
+                        sum(x[i, h, k] for i in range(num_nodes) if i != h) ==
+                        sum(x[h, j, k] for j in range(num_nodes) if j != h)
+                    )
+        # Constraint 2 & 3: Vehicle Capacity and Usage
+        for k, (weight_cap, volume_cap, cruising_dist) in enumerate(self.vehicles):
+            # Constraint 2: Vehicle Capacity
+            self.model.Add(
+            sum(self.weights[o+1] * y[o, k] for o in range(num_packages)) <= weight_cap
+            )
+            self.model.Add(
+                sum(self.volumes[o+1] * y[o, k] for o in range(num_packages)) <= volume_cap
+            )
+
+            # Constraint 3: Vehicle Usage
+            # z[k] = 1 iff any package is served
+            package_assignments = [y[o, k] for o in range(num_packages)]
+            self.model.AddMaxEquality(z[k], package_assignments)
+
+            # Depot constraint: vehicle leaves/returns iff it's used
+            self.model.Add(sum(x[0, j, k] for j in range(1, num_nodes)) == z[k])
+            self.model.Add(sum(x[i, 0, k] for i in range(1, num_nodes)) == z[k])
+
+
+        # Constraint 4: Miller-Tucker-Zemlin (MTZ) Subtour Elimination
+        # See https://en.wikipedia.org/wiki/Travelling_salesman_problem
+        for k in range(len(self.vehicles)):
             for i in range(1, num_nodes):
                 for j in range(1, num_nodes):
                     if i != j:
                         self.model.Add(
                             u[i, k] + 1 <= u[j, k] + (num_nodes) * (1 - x[i, j, k])
                         )
-            # Constraint 5: Maximum duty time
-            # The total travel time and stopover time must not exceed
-            # the maximum duty time of the driver
-            travel_time = [
+        # Constraint 5: Time Constraints (travel time + stopover time)
+        for k in range(len(self.vehicles)):
+            travel_time = sum(
                 int(self.route_durations[i][j]) * x[i, j, k]
-                for i in range(num_nodes)
-                for j in range(num_nodes)
-                if i != j
-            ]
-            stopover_time = [
-                int(self.stopping_time[j]) * y[j, k] for j in range(1, num_nodes)
-            ]
-            self.model.Add(sum(travel_time) + sum(stopover_time) <= self.max_duty_time)
-            # Constraint 6: Maximum distance
-            # The total travel distance must not exceed the maximum cruising
-            # distance of the vehicle
-            self.model.Add(
-                sum(
-                    int(self.route_distances[i][j]) * x[i, j, k]
-                    for i in range(num_nodes)
-                    for j in range(num_nodes)
-                    if i != j
-                )
-                <= cruising_dist
+                for i in range(num_nodes) for j in range(num_nodes) if i != j
             )
 
-        # Constraint 7: Each customer must be served exactly once
+            stopover_time = 0
+            unique_stops = set(self.orders[o]["address_index"] + 1 for o in range(num_packages))
+            for stop_index in unique_stops:
+                stop_visited = self.model.NewBoolVar(f"stop_visited_{stop_index}_{k}")
+                packages_at_stop = [o for o in range(num_packages)
+                                    if self.orders[o]["address_index"] + 1 == stop_index]
+                for o in packages_at_stop:
+                    self.model.Add(stop_visited >= y[o, k])
+                self.model.Add(stop_visited <= sum(y[o, k] for o in packages_at_stop))
+                stopover_time += int(self.stopping_time[stop_index]) * stop_visited
+
+            self.model.Add(
+                travel_time + stopover_time <= self.max_duty_time
+            )
+
+
+        # Constraint 6: Distance Constraint
+        # The total travel distance must not exceed the maximum cruising
+        # distance of the vehicle
+        for k, (_, _, cruising_dist) in enumerate(self.vehicles):
+            self.model.Add(
+                sum(int(self.route_distances[i][j]) * x[i, j, k]
+                    for i in range(num_nodes) for j in range(num_nodes) if i != j)
+                <= cruising_dist)
+
+        # Constraint 7 & 8: Assignment Constraints
+        # Constraint 7: Each package is assigned to exactly one vehicle
+        for o in range(num_packages):
+            self.model.Add(sum(y[o, k] for k in range(len(self.vehicles))) == 1)
+
+        # Constraint 8: Each stop is visited exactly once
         for j in range(1, num_nodes):
-            self.model.Add(sum(y[j, k] for k in range(len(self.vehicles))) == 1)
+            self.model.Add(
+                sum(x[i, j, k] for i in range(num_nodes) if i != j
+                    for k in range(len(self.vehicles))) == 1
+            )
 
         # Objective: Minimize
         # total travel time + beta * truck usage - alpha * order waiting time
         time_cost = sum(
             self.route_durations[i][j] * x[i, j, k]
             for k in range(len(self.vehicles))
-            for i in range(num_nodes)
-            for j in range(num_nodes)
-            if i != j
+            for i in range(num_nodes) for j in range(num_nodes) if i != j
         )
         priority_cost = sum(
-            self.order_waiting_times[j] * y[j, k]
-            for k in range(len(self.vehicles))
-            for j in range(1, num_nodes)
+            self.order_waiting_times[o+1] * y[o, k]
+            for k in range(len(self.vehicles)) for o in range(num_packages)
         )
         vehicle_cost = sum(z[k] for k in range(len(self.vehicles)))
+
         self.model.Minimize(
             time_cost + self.beta * vehicle_cost - self.alpha * priority_cost
         )
 
         # Solve the model
         status = self.solver.Solve(self.model)
-
+        # Format the returned solution
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
             routes = []
             for k in range(len(self.vehicles)):
@@ -259,11 +291,12 @@ class SingleDepotVRPRegular:
                 for j in range(num_nodes)
                 if i != j
             )
-            total_stopover_time = sum(
-                self.stopping_time[j] * self.solver.Value(y[j, k])
-                for k in range(len(self.vehicles))
-                for j in range(1, num_nodes)
-            )
+            total_stopover_time = 0
+            for k in range(len(self.vehicles)):
+                for o in range(num_packages):
+                    stop_index = self.orders[o]["address_index"] + 1
+                    if self.solver.Value(y[o, k]) and stop_index < len(self.stopping_time):
+                        total_stopover_time += self.stopping_time[stop_index] * self.solver.Value(y[o, k])
 
             return {
                 "status": "optimal" if status == cp_model.OPTIMAL else "feasible",
@@ -274,9 +307,9 @@ class SingleDepotVRPRegular:
                     self.solver.Value(z[k]) for k in range(len(self.vehicles))
                 ],
                 "priority_cost": sum(
-                    self.order_waiting_times[j] * self.solver.Value(y[j, k])
+                    self.order_waiting_times[o] * self.solver.Value(y[o, k])
                     for k in range(len(self.vehicles))
-                    for j in range(1, num_nodes)
+                    for o in range(num_packages)
                 ),
                 "total_cost": self.solver.ObjectiveValue(),
                 "solver": "CpSAT",

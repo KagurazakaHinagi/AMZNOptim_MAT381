@@ -3,55 +3,48 @@ import json
 import pandas as pd
 
 
-def stop_info_from_orders(order_csv: str, packaging_info_tsv: str) -> dict:
-    """Extracts stop information from orders CSV file."""
+def compute_waiting_times(
+    order_data: list[dict], dept_time: pd.Timestamp
+) -> list[dict]:
+    """Computes maximum order waiting times for each stop."""
+    for order in order_data:
+        order["waiting_time"] = int((dept_time - pd.to_datetime(order["timestamp"])).total_seconds())
+    return order_data
+
+
+def order_info_from_csv(
+    order_csv: str, packaging_info_tsv: str
+) -> tuple[list[dict], dict[str, list[str]]]:
+    """Extracts order information from orders CSV file."""
     df = pd.read_csv(order_csv, index_col=0)
-    stop_data = {}
+    order_data = []
+    address_data = {
+        "ids": [],
+        "addresses": [],
+    }
     for i, row in df.iterrows():
         package_volume, package_dimension = fetch_packaging_info(
             row["packaging_type"], packaging_info_tsv=packaging_info_tsv
         )
-        if row["customer_id"] not in stop_data:
-            stop_data[row["customer_id"]] = {
+        try:
+            address_index = address_data["ids"].index(row["customer_id"])
+        except ValueError:
+            address_data["ids"].append(row["customer_id"])
+            address_index = len(address_data["ids"]) - 1
+            address_data["addresses"].append(row["address"])
+        order_data.append(
+            {
+                "id": i,
+                "address_id": row["customer_id"],
                 "address": row["address"],
-                "order": [
-                    {
-                        "id": i,
-                        "timestamp": row["order_timestamp"],
-                        "package_weight": row["packaging_weight"],
-                        "package_volume": package_volume,
-                        "package_dimension": package_dimension,
-                    }
-                ],
+                "timestamp": row["order_timestamp"],
+                "package_weight": row["packaging_weight"],
+                "package_volume": package_volume,
+                "package_dimension": package_dimension,
+                "address_index": address_index,
             }
-        else:
-            stop_data[row["customer_id"]]["order"].append(
-                {
-                    "id": i,
-                    "timestamp": row["order_timestamp"],
-                    "package_weight": row["packaging_weight"],
-                    "package_volume": package_volume,
-                    "package_dimension": package_dimension,
-                }
-            )
-    for stop in stop_data.values():
-        total_weight = sum(order["package_weight"] for order in stop["order"])
-        total_volume = sum(order["package_volume"] for order in stop["order"])
-        stop["total_weight"] = total_weight
-        stop["total_volume"] = total_volume
-    return stop_data
-
-
-def compute_waiting_times(stop_data: dict, dept_time: pd.Timestamp) -> dict:
-    """Computes maximum order waiting times for each stop."""
-    for _, stop in stop_data.items():
-        stop["max_waiting_time"] = 0
-        for order in stop["order"]:
-            order_time = pd.to_datetime(order["timestamp"]) - dept_time
-            stop["max_waiting_time"] = max(
-                stop["max_waiting_time"], order_time.total_seconds()
-            )
-    return stop_data
+        )
+    return order_data, address_data
 
 
 def fetch_packaging_info(packaging_type: str, packaging_info_tsv: str):
@@ -69,7 +62,7 @@ def fetch_packaging_info(packaging_type: str, packaging_info_tsv: str):
 
 def fetch_route_matrix(
     depot_data: list[dict],
-    stop_data: dict,
+    stop_addresses: list[str],
     traffic_aware: bool = False,
     dept_time: pd.Timestamp | None = None,
     matrix_json: str | None = None,
@@ -80,7 +73,6 @@ def fetch_route_matrix(
     from amznoptim.utils.gmaps_service import RouteMatrix
 
     matrix_service = RouteMatrix(api_key=api_key)
-    stop_addresses = [stop["address"] for stop in stop_data.values()]
     depot_addresses = [depot["address"] for depot in depot_data]
     addresses = depot_addresses + stop_addresses
     matrix_service.set_origins(addresses)
