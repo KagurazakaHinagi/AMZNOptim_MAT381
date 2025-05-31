@@ -10,11 +10,197 @@ from amznoptim.utils.preprocess import (
 )
 
 
-class SingleDepotVRPRegular:
+class DepotVRP:
+    """Base class for Vehicle Routing Problem (VRP) solvers.
+
+    This class serves as a base for specific VRP implementations, such as Single Depot VRP.
+    It provides methods to set hyperparameters, process data, and validate input data.
+    """
+
+    def __init__(
+        self,
+        depot_data: list[dict],
+        order_data: list[dict],
+        address_data: dict[str, list[str]],
+    ):
+        self.depots = depot_data
+        self.orders = order_data
+        self.stops = address_data
+        self.addresses = []
+        self.weights = []
+        self.volumes = []
+        self.order_waiting_times = []
+        self.route_durations = [[]]
+        self.route_distances = [[]]
+        self.vehicles = []
+        self.vehicles_per_depot = []
+        self.depot_vehicle_mapping = {}
+        self.dept_time = pd.Timestamp.now()
+        self.model = cp_model.CpModel()
+        self.solver = cp_model.CpSolver()
+        self.alpha = 0  # Hyperparameter: penalty of order waiting time
+        self.beta = 0  # Hyperparameter: penalty for using an extra vehicle
+        self.stopping_time = []  # Stopping time at each order
+        self.max_duty_time = 0  # Maximum delivery time for each vehicle
+
+    def set_hyperparams(self, *, alpha, beta):
+        """
+        Set hyperparameters for the objective function.
+        """
+        self.alpha = alpha or self.alpha
+        self.beta = beta or self.beta
+
+    def set_solver_max_time(self, max_time: int):
+        """
+        Set the maximum time in seconds for the solver to run.
+        If the solver exceeds this time, it will stop and return the
+        best solution found so far.
+        """
+        self.solver.parameters.max_time_in_seconds = max_time
+
+    def set_stopping_time(self, stopping_time: list[int] | int):
+        """
+        Set the stopping time at each stop.
+        If a single integer is provided, it will be used for all stops.
+        """
+        if isinstance(stopping_time, int):
+            self.stopping_time = [0] * len(self.depots) + [stopping_time] * (
+                len(self.addresses) - len(self.depots)
+            )
+        else:
+            self.stopping_time = [0] * len(self.depots) + stopping_time
+
+    def set_max_duty_time(self, max_duty_time: int):
+        """
+        Set the maximum duty time for all vehicles.
+        """
+        self.max_duty_time = max_duty_time
+
+    def process_data(
+        self,
+        vehicle_data_path: str,
+        dept_time: pd.Timestamp | None = None,
+        matrix_json: str | None = None,
+        traffic_aware: bool = False,
+        matrix_save_path: str | None = None,
+        api_key=None,
+    ):
+        """
+        Process the input data for the SDVRP.
+        """
+        self.process_order_data(dept_time)
+        self.process_vehicle_data(vehicle_data_path)
+        self.process_route_data(
+            matrix_json=matrix_json,
+            traffic_aware=traffic_aware,
+            dept_time=dept_time,
+            api_key=api_key,
+            save_path=matrix_save_path,
+        )
+
+    def process_order_data(self, dept_time: pd.Timestamp | None = None):
+        """
+        Process the order data to compute waiting times and prepare
+        assresses, weights, and volumes.
+        """
+        self.dept_time = dept_time or pd.Timestamp.now()
+        order_data = compute_waiting_times(self.orders, dept_time=self.dept_time)
+        self.addresses = [depot["address"] for depot in self.depots] + self.stops[
+            "addresses"
+        ]
+        self.weights = [order["package_weight"] for order in order_data]
+        self.volumes = [order["package_volume"] for order in order_data]
+        self.order_waiting_times = [order["waiting_time"] for order in order_data]
+        self.stopping_time = [0] * len(self.addresses)
+
+    def process_vehicle_data(self, vehicle_data_path: str):
+        """
+        Process the vehicle data to fetch the metric information of the available vehicles.
+        """
+        self.vehicles_per_depot = []
+        vehicle_idx = 0
+        for depot_idx, depot in enumerate(self.depots):
+            depot_vehicles = fetch_vehicle_info(depot, vehicle_data_path)
+            self.vehicles_per_depot.append(depot_vehicles)
+
+            for _ in depot_vehicles:
+                self.depot_vehicle_mapping[vehicle_idx] = depot_idx
+                vehicle_idx += 1
+
+        self.vehicles = [
+            vehicle
+            for depot_vehicles in self.vehicles_per_depot
+            for vehicle in depot_vehicles
+        ]
+
+    def process_route_data(
+        self,
+        matrix_json: str | None = None,
+        traffic_aware: bool = False,
+        dept_time: pd.Timestamp | None = None,
+        save_path: str | None = None,
+        api_key=None,
+    ):
+        """
+        Process the addresses to fetch the route matrix.
+        """
+        if not self.addresses:
+            raise ValueError("Addresses are not set. Please process order data first.")
+        route_matrix, depot_cnt = fetch_route_matrix(
+            self.depots,
+            self.addresses[len(self.depots) :],
+            traffic_aware,
+            dept_time,
+            matrix_json,
+            save_path,
+            api_key=api_key,
+        )
+        if depot_cnt != len(self.depots):
+            raise ValueError(
+                "The number of depots in the route matrix does not match the number of depots provided."
+            )
+        self.route_durations = route_matrix["duration_seconds"]
+        self.route_distances = route_matrix["distance_meters"]
+
+    def validate(self):
+        """
+        Validate the input data for the VRP.
+        """
+        if not self.addresses:
+            raise ValueError("Addresses are not set. Please process order data first.")
+        if not self.vehicles:
+            raise ValueError(
+                "Vehicle information is not set. Please process vehicle data first."
+            )
+        if len(self.route_distances) == 0 or len(self.route_durations) == 0:
+            raise ValueError(
+                "Route distances are not set. Please process route data first."
+            )
+        if len(self.addresses) != len(self.route_durations):
+            raise ValueError(
+                "The number of addresses does not match the number of route durations."
+            )
+
+    def solve(self):
+        """
+        Run the solver to find the optimal routes for the VRP.
+        This method should be implemented in subclasses.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
+    def generate_plan(self, solution, save_path: str | None = None):
+        """
+        Generate a human-readable plan from the solution.
+        This method should be implemented in subclasses.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
+
+class SingleDepotVRPRegular(DepotVRP):
     """Class to solve the Single Depot Vehicle Routing Problem (SDVRP) using Google OR-Tools.
 
     This class uses the Constraint Programming (CP) solver from Google OR-Tools to find an optimal
-    solution for the SDVRP. The problem is defined by a depot and a set of stops, each with a specific
+    solution for the SDVRP. The problem  is defined by a depot and a set of stops, each with a specific
     weight and volume. The goal is to minimize the total travel time while satisfying the constraints
     of vehicle capacity and order delivery.
     The class allows for setting hyperparameters for the optimization, such as penalties for order
@@ -40,141 +226,10 @@ class SingleDepotVRPRegular:
         order_data: list[dict],
         address_data: dict[str, list[str]],
     ):
-        self.depot = depot_data[0]
-        self.orders = order_data
-        self.stops = address_data
-        self.addresses = []
-        self.weights = []
-        self.volumes = []
-        self.order_waiting_times = []
-        self.route_durations = [[]]
-        self.route_distances = [[]]
-        self.vehicles = []
-        self.dept_time = pd.Timestamp.now()  # Default to current time
-        self.model = cp_model.CpModel()
-        self.solver = cp_model.CpSolver()
-        self.alpha = 0  # Hyperparameter: penalty of order waiting time
-        self.beta = 0  # Hyperparameter: penalty for using an extra vehicle
-        self.stopping_time = []  # Stopping time at each order
+        super().__init__(depot_data, order_data, address_data)
         self.max_duty_time = (
             28800  # Maximum delivery time for each vehicle (default: 8 hours)
         )
-
-    def set_hyperparams(self, *, alpha, beta):
-        """
-        Set hyperparameters for the objective function.
-        """
-        self.alpha = alpha or self.alpha
-        self.beta = beta or self.beta
-
-    def set_solver_max_time(self, max_time: int):
-        """
-        Set the maximum time in seconds for the solver to run.
-        If the solver exceeds this time, it will stop and return the
-        best solution found so far.
-        """
-        self.solver.parameters.max_time_in_seconds = max_time
-
-    def set_stopping_time(self, stopping_time: list[int] | int):
-        """
-        Set the stopping time at each stop.
-        If a single integer is provided, it will be used for all stops.
-        """
-        if isinstance(stopping_time, int):
-            self.stopping_time = [0] + [stopping_time] * (len(self.addresses) - 1)
-        else:
-            self.stopping_time = stopping_time
-
-    def set_max_duty_time(self, max_duty_time: int):
-        """
-        Set the maximum duty time for all vehicles.
-        """
-        self.max_duty_time = max_duty_time
-
-    def process_data(
-        self,
-        vehicle_data_path: str,
-        dept_time: pd.Timestamp | None = None,
-        matrix_json: str | None = None,
-        traffic_aware: bool = False,
-        save_path: str | None = None,
-        api_key=None,
-    ):
-        """
-        Process the input data for the SDVRP.
-        """
-        self.process_order_data(dept_time)
-        self.process_vehicle_data(vehicle_data_path)
-        self.process_route_data(
-            matrix_json=matrix_json,
-            traffic_aware=traffic_aware,
-            dept_time=dept_time,
-            api_key=api_key,
-            save_path=save_path,
-        )
-
-    def process_order_data(self, dept_time: pd.Timestamp | None = None):
-        """
-        Process the order data to compute waiting times and prepare
-        assresses, weights, and volumes.
-        """
-        self.dept_time = dept_time or pd.Timestamp.now()
-        order_data = compute_waiting_times(self.orders, dept_time=self.dept_time)
-        self.addresses = [self.depot["address"]] + self.stops["addresses"]
-        self.weights = [order["package_weight"] for order in order_data]
-        self.volumes = [order["package_volume"] for order in order_data]
-        self.order_waiting_times = [order["waiting_time"] for order in order_data]
-        self.stopping_time = [0] * len(self.addresses)
-
-    def process_vehicle_data(self, vehicle_data_path: str):
-        """
-        Process the vehicle data to fetch the metric information of the available vehicles.
-        """
-        self.vehicles = fetch_vehicle_info(self.depot, vehicle_data_path)
-
-    def process_route_data(
-        self,
-        matrix_json: str | None = None,
-        traffic_aware: bool = False,
-        dept_time: pd.Timestamp | None = None,
-        save_path: str | None = None,
-        api_key=None,
-    ):
-        """
-        Process the addresses to fetch the route matrix.
-        """
-        if not self.addresses:
-            raise ValueError("Addresses are not set. Please process order data first.")
-        route_matrix = fetch_route_matrix(
-            [self.depot],
-            self.addresses,
-            traffic_aware,
-            dept_time,
-            matrix_json,
-            save_path,
-            api_key=api_key,
-        )[0]
-        self.route_durations = route_matrix["duration_seconds"]
-        self.route_distances = route_matrix["distance_meters"]
-
-    def validate(self):
-        """
-        Validate the input data for the SDVRP.
-        """
-        if not self.addresses:
-            raise ValueError("Addresses are not set. Please process order data first.")
-        if not self.vehicles:
-            raise ValueError(
-                "Vehicle information is not set. Please process vehicle data first."
-            )
-        if not self.route_distances or not self.route_durations:
-            raise ValueError(
-                "Route distances or durations are not set. Please process route data first."
-            )
-        if len(self.addresses) != len(self.route_durations):
-            raise ValueError(
-                "The number of addresses does not match the number of route durations."
-            )
 
     def solve(self):
         """
@@ -394,8 +449,8 @@ class SingleDepotVRPRegular:
         Generate a human-readable plan from the solution.
         """
         plan = {
-            "depot": self.depot["id"],
-            "depot_address": self.depot["address"],
+            "depot": self.depots[0]["id"],
+            "depot_address": self.depots[0]["address"],
             "departure_time": self.dept_time.isoformat(),
         }
         plan["assignments"] = {}
