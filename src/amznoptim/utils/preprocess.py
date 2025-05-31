@@ -98,8 +98,8 @@ def fetch_route_matrix(
 
 def fetch_vehicle_info(
     depot_data: dict, vehicle_data_path: str
-) -> list[tuple[float, float, float]]:
-    """Fetches vehicle payload, capacity, and cruising range info."""
+) -> list[tuple[str, float, float, float]]:
+    """Fetches vehicle model, payload, capacity, and cruising range info."""
     with open(vehicle_data_path, "r") as f:
         all_vehicles = json.load(f)
     available_vehicles = depot_data.get("vehicles", {})
@@ -111,5 +111,5 @@ def fetch_vehicle_info(
             weight_cap = all_vehicles["Regular"][k]["Weight_capacity"]
             volume_cap = all_vehicles["Regular"][k]["Volume_capacity"]
             cruising_dist = all_vehicles["Regular"][k]["Max_distance"]
-            vehicles.extend([(weight_cap, volume_cap, cruising_dist)] * v)
+            vehicles.extend([(k, weight_cap, volume_cap, cruising_dist)] * v)
     return vehicles
