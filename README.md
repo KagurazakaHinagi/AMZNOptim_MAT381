@@ -97,7 +97,7 @@ WIP
                         \quad \forall k, h\in [n] & \text{(1.3)} \cr
                     &\space \sum_{o=1}^{O} w_o y_{o,k} \le W_k, \space \sum_{o=1}^{O} v_o y_{o,k} \le V_k,
                         \quad \forall k & \text{(2)} \cr
-                    &\space z_k=\max \\{y_{o, k}: o \in \\{1, \dots, O\\}\\},
+                    &\space z_k=\max \{y_{o, k}: o \in \{1, \dots, O\}\},
                         \quad \forall k & \text{(3)} \cr
                     &\space u_{i,k}+1 \le u_{j,k} + N\cdot (1 - x_{i, j, k}),
                         \quad \forall i \ne j,k & \text{(4)} \cr
@@ -114,7 +114,7 @@ WIP
                         \quad \forall o & \text{(7)} \cr
                     &\space \sum_{k=1}^K \sum_{i=0}^N x_{i,j,k}=1,
                         \quad \forall j & \text{(8)} \cr
-                    &\space x_{i,j,k},y_{o,k},z_k,\text{vis}_{j,k}\in \\{0,1\\} \cr
+                    &\space x_{i,j,k},y_{o,k},z_k,\text{vis}_{j,k}\in \{0,1\} \cr
                     &\space u_{i,k} \in [0,N]
 \end{aligned}
 ```
