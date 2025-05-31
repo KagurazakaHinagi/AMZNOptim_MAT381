@@ -152,19 +152,19 @@ class SingleDepotVRPRegular:
         for k in range(len(self.vehicles)):
             for o in range(num_packages):
                 stop_index = self.orders[o]["address_index"] + 1  # +1 for depot
-                # 1.1. If package o is served by vehicle k, then there must be an incoming edge to the stop
+                # 1a. If package o is served by vehicle k, then there must be an incoming edge to the stop
                 self.model.Add(
                     sum(x[i, stop_index, k] for i in range(num_nodes) if i != stop_index) >= y[o, k]
                 )
 
             # Flow conservation (incoming flow = outgoing flow)
             for h in range(num_nodes):
-                if h == 0: # 1.2. Depot flow
+                if h == 0: # 1b. Depot flow
                     self.model.Add(
                         sum(x[0, j, k] for j in range(1, num_nodes) if j != 0)  ==
                         sum(x[i, 0, k] for i in range(1, num_nodes) if i != 0)
                     )
-                else: # 1.3. Non-depot flow
+                else: # 1c. Non-depot flow
                     self.model.Add(
                         sum(x[i, h, k] for i in range(num_nodes) if i != h) ==
                         sum(x[h, j, k] for j in range(num_nodes) if j != h)
@@ -212,12 +212,12 @@ class SingleDepotVRPRegular:
                 packages_at_stop = [o for o in range(num_packages)
                                     if self.orders[o]["address_index"] + 1 == stop_index]
                 for o in packages_at_stop:
-                    # 5.2. If package o is assigned to vehicle k, then the stop must be visited
+                    # 5b. If package o is assigned to vehicle k, then the stop must be visited
                     self.model.Add(stop_visited >= y[o, k])
-                # 5.3. If the stop is visited, then at least one package must be assigned to vehicle k
+                # 5c. If the stop is visited, then at least one package must be assigned to vehicle k
                 self.model.Add(stop_visited <= sum(y[o, k] for o in packages_at_stop))
                 stopover_time += int(self.stopping_time[stop_index]) * stop_visited
-            # 5.1. Total travel time + stopover time must not exceed max duty time
+            # 5a. Total travel time + stopover time must not exceed max duty time
             self.model.Add(
                 travel_time + stopover_time <= self.max_duty_time
             )

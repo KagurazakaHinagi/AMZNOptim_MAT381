@@ -90,11 +90,11 @@ WIP
                         -\alpha \sum_{k=1}^K\sum_{o=1}^{O} P_oy_{o, k}
                         +\beta \sum_{k=1}^K z_k & \cr
     \text{s.t.}     &\space \sum_{i=0,i\ne s(o)}^N x_{i, s(o),k} \ge y_{o, k},
-                        \quad \forall o, k & \text{(1.1)} \cr
+                        \quad \forall o, k & \text{(1a)} \cr
                     &\space \sum_{j=1}^N x_{0, j, k}=\sum_{i=1}^N x_{i, 0, k}=z_k,
-                        \quad \forall k & \text{(1.2)} \cr
+                        \quad \forall k & \text{(1b)} \cr
                     &\space \sum_{i=0,i\ne h}^N x_{i, h, k} =\sum_{j=0,j\ne h}^N x_{h, j, k},
-                        \quad \forall k, h\in [n] & \text{(1.3)} \cr
+                        \quad \forall k, h\in [n] & \text{(1c)} \cr
                     &\space \sum_{o=1}^{O} w_o y_{o,k} \le W_k, \space \sum_{o=1}^{O} v_o y_{o,k} \le V_k,
                         \quad \forall k & \text{(2)} \cr
                     &\space z_k=\max \{y_{o, k}: o \in \{1, \dots, O\}\},
@@ -103,11 +103,11 @@ WIP
                         \quad \forall i \ne j,k & \text{(4)} \cr
                     &\space \sum_{i=0}^N \sum_{j=0}^N t_{i, j}x_{i, j, k}+\sum_{j \in S_k} \hat{t}_j
                         \cdot \text{vis}_{j,k} \le T,
-                        \quad \forall k & \text{(5.1)} \cr
+                        \quad \forall k & \text{(5a)} \cr
                     &\space \text{vis}_{j,k} \ge y_{o,k},
-                        \quad \forall k,o:s(o)=j & \text{(5.2)} \cr
+                        \quad \forall k,o:s(o)=j & \text{(5b)} \cr
                     &\space \text{vis}_{j,k} \le \sum_{o:s(o)=j} y_{o,k},
-                        \quad \forall j\in S_k,k & \text{(5.3)} \cr
+                        \quad \forall j\in S_k,k & \text{(5c)} \cr
                     &\space \sum_{i=0}^N \sum_{j=0}^N d_{i,j}x_{i,j,k}\le D_k,
                         \quad \forall k & \text{(6)} \cr
                     &\space \sum_{k=1}^K y_{o,k}=1,
@@ -121,21 +121,25 @@ WIP
 
 ##### Explanation of constraints
 
-1. Linking visits to form a route:\
-    If some stop $i$ is visited by vehicle $k$, then there is exactly one arc enters and leave that stop.
-2. Capacity Constraint:\
-    When loading the packages onto vehicle $k$, the total volume and weight could not exceed the payload and the truck volume of that vehicle.
-3. Depot visits in the route:\
-    If truck $k$ is used, then it leaves and returns to the depot once.
+1. Routing Constraints:\
+    (1a). Ensure the served orders have incoming edges to their stops.\
+    (1b-1c). Enforce flow conservaton separately for depot and non-depot nodes.
+2. Vehicle Capacity Constraints:\
+    Each vehicle cannot load packages that the total exceeds the maximum capacity of weight or volume.
+3. Vehicle Usage Constraint:\
+    If any package is assigned to a specific vehicle, then that vehicle need to be marked as chosen.
 4. Subtour Elimination (Miller-Tucker-Zemlin):\
-    Prevent disconnected loops by constraining on the order of visiting time.\
+    Prevent disconnected loops by constraining on the order of the visiting time.\
     See [Wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Miller%E2%80%93Tucker%E2%80%93Zemlin_formulation).
-5. Duty time:\
-    The total traveling time + stopover time cannot exceed the driver's maximum duty time.
-6. Maximum distance:\
-    The traveling distance from depot along the scheduled stops back to the depot could not exceed the vehicle $k$'s cruising range.
-7. Single visit to each stop:\
-    Each stop cannot be visited more than one times. Otherwise it's inefficient.
+5. Time Constraints:\
+    (5a). The total travel time + stopover time must not exceeds the driver duty time.\
+    (5b-5c). A stop must be visited iff some package corresponding to that stop is assigned to the vehicle.
+6. Distance Constraint:\
+    The total traveling distance must not exceed the vehicle's cruising range.
+7. Package Assignment Constraint:
+    Each package is assigned to exactly one vehicle.
+8. Stop Assignment Constraint:
+    Each stop is visited exactly once.
 
 ### Multi-Depot VRP
 
