@@ -12,9 +12,33 @@ from amznoptim.utils.preprocess import (
 
 class DepotVRP:
     """Base class for Vehicle Routing Problem (VRP) solvers.
+    This class provides the basic structure and methods for processing
+    depot, order, and address data, as well as setting hyperparameters
+    and solver configurations.
+    Subclasses should implement the `solve` and `generate_plan` methods
+    to provide specific VRP solving logic and plan generation.
 
-    This class serves as a base for specific VRP implementations, such as Single Depot VRP.
-    It provides methods to set hyperparameters, process data, and validate input data.
+    Attributes:
+        depots (list[dict]): List of depot data, each containing depot information.
+        orders (list[dict]): List of order data, each containing order information.
+        stops (dict[str, list[str]]): Dictionary containing stop id and address.
+        addresses (list[str]): List of addresses derived from depots and stops.
+        weights (list[float]): List of package weights in grams for each order.
+        volumes (list[float]): List of package volumes in cubic milimeter for each order.
+        order_waiting_times (list[int]): List of waiting times in seconds for each order.
+        route_durations (np.ndarray): Matrix of travel durations in meters between addresses.
+        route_distances (np.ndarray): Matrix of travel distances in seconds between addresses.
+        vehicles (list[tuple]): List of vehicle information, each containing vehicle model,
+            weight capacity, volume capacity, and cruising distance.
+        vehicles_per_depot (list[list[tuple]]): List of vehicles available at each depot.
+        depot_vehicle_mapping (dict[int, int]): Mapping of vehicle index to depot index.
+        dept_time (pd.Timestamp): Departure time for the delivery.
+        model (cp_model.CpModel): OR-Tools CP-SAT model for the VRP.
+        solver (cp_model.CpSolver): OR-Tools CP-SAT solver for the VRP.
+        alpha (int): Hyperparameter for the penalty of order waiting time.
+        beta (int): Hyperparameter for the penalty for using an extra vehicle.
+        stopping_time (list[int]): List of stopping times at each stop in seconds.
+        max_duty_time (int): Maximum delivery time for each vehicle in seconds.
     """
 
     def __init__(
@@ -23,6 +47,16 @@ class DepotVRP:
         order_data: list[dict],
         address_data: dict[str, list[str]],
     ):
+        """Initialize the DepotVRP with depot, order, and address data.
+
+        For input data format, refer to the documentation at
+        https://github.com/KagurazakaHinagi/AMZNOptim_MAT381/blob/main/docs/input.md
+
+        Args:
+            depot_data (list[dict]): List of depot data, each containing depot information.
+            order_data (list[dict]): List of order data, each containing order information.
+            address_data (dict[str, list[str]]): DIctionary containing stop id and address.
+        """
         self.depots = depot_data
         self.orders = order_data
         self.stops = address_data
@@ -30,8 +64,8 @@ class DepotVRP:
         self.weights = []
         self.volumes = []
         self.order_waiting_times = []
-        self.route_durations = [[]]
-        self.route_distances = [[]]
+        self.route_durations = np.array([[]])
+        self.route_distances = np.array([[]])
         self.vehicles = []
         self.vehicles_per_depot = []
         self.depot_vehicle_mapping = {}
@@ -60,7 +94,7 @@ class DepotVRP:
 
     def set_stopping_time(self, stopping_time: list[int] | int):
         """
-        Set the stopping time at each stop.
+        Set the stopping time in seconds at each stop.
         If a single integer is provided, it will be used for all stops.
         """
         if isinstance(stopping_time, int):
@@ -72,7 +106,7 @@ class DepotVRP:
 
     def set_max_duty_time(self, max_duty_time: int):
         """
-        Set the maximum duty time for all vehicles.
+        Set the maximum duty time in seconds for all vehicles.
         """
         self.max_duty_time = max_duty_time
 
@@ -86,7 +120,10 @@ class DepotVRP:
         api_key=None,
     ):
         """
-        Process the input data for the SDVRP.
+        Process the input data for the VRP in batch.
+
+        For input data format, refer to the documentation at
+        https://github.com/KagurazakaHinagi/AMZNOptim_MAT381/blob/main/docs/input.md
         """
         self.process_order_data(dept_time)
         self.process_vehicle_data(vehicle_data_path)
@@ -102,6 +139,10 @@ class DepotVRP:
         """
         Process the order data to compute waiting times and prepare
         assresses, weights, and volumes.
+
+        Args:
+            dept_time (pd.Timestamp | None): Departure time for the delivery.
+                If None, the current time will be used.
         """
         self.dept_time = dept_time or pd.Timestamp.now()
         order_data = compute_waiting_times(self.orders, dept_time=self.dept_time)
@@ -116,6 +157,12 @@ class DepotVRP:
     def process_vehicle_data(self, vehicle_data_path: str):
         """
         Process the vehicle data to fetch the metric information of the available vehicles.
+
+        For input data format, refer to the documentation at
+        https://github.com/KagurazakaHinagi/AMZNOptim_MAT381/blob/main/docs/input.md
+
+        Args:
+            vehicle_data_path (str): Path to the vehicle data file.
         """
         self.vehicles_per_depot = []
         vehicle_idx = 0
@@ -143,6 +190,25 @@ class DepotVRP:
     ):
         """
         Process the addresses to fetch the route matrix.
+
+        For input data format, refer to the documentation at
+        https://github.com/KagurazakaHinagi/AMZNOptim_MAT381/blob/main/docs/input.md
+
+        Args:
+            matrix_json (str | None): Path to the route matrix JSON file generated
+                by Google Maps RouteMatrix API. If None, the route matrix will be
+                directly fetched from the API using the provided API key.
+            traffic_aware (bool): Whether to use traffic-aware routing. This option
+                requires a valid departure time and would cost at a higher rate
+                when using Google Maps API.
+            dept_time (pd.Timestamp | None): Departure time for the delivery.
+                If None, the current time will be used.
+            save_path (str | None): Path to save the computed route matrix JSON file.
+            api_key (str | None): Google Maps API key for fetching route data.
+
+        Raises:
+            ValueError: If the addresses are not processed, or if the number of depots
+                in the route matrix does not match the number of depots provided.
         """
         if not self.addresses:
             raise ValueError("Addresses are not set. Please process order data first.")
@@ -196,28 +262,9 @@ class DepotVRP:
         raise NotImplementedError("This method should be implemented in subclasses.")
 
 
-class SingleDepotVRPRegular(DepotVRP):
-    """Class to solve the Single Depot Vehicle Routing Problem (SDVRP) using Google OR-Tools.
-
-    This class uses the Constraint Programming (CP) solver from Google OR-Tools to find an optimal
-    solution for the SDVRP. The problem  is defined by a depot and a set of stops, each with a specific
-    weight and volume. The goal is to minimize the total travel time while satisfying the constraints
-    of vehicle capacity and order delivery.
-    The class allows for setting hyperparameters for the optimization, such as penalties for order
-    waiting time and vehicle usage. It also allows for setting a stopping time at each order and a
-    maximum delivery time for each schedule.
-
-    Args:
-        depot_data (dict): Contains information about the depot,
-        including address and the available vehicle types.
-
-        order_data (list[dict]): List of orders, each containing
-            order details such as package weight, volume, and address index.
-        address_data (dict[str, list[str]]): Contains addresses for the stops,
-            with keys "ids" and "addresses".
-        The "ids" key contains unique identifiers for each address,
-        and the "addresses" key contains the corresponding addresses.
-        The depot address is expected to be the first address in the list.
+class DepotVRPRegular(DepotVRP):
+    """
+    Vehicle Routing Problem (VRP) solver for Amazon regular delivery services.
     """
 
     def __init__(
@@ -226,6 +273,9 @@ class SingleDepotVRPRegular(DepotVRP):
         order_data: list[dict],
         address_data: dict[str, list[str]],
     ):
+        """
+        Initialize the DepotVRPRegular with depot, order, and address data.
+        """
         super().__init__(depot_data, order_data, address_data)
         self.max_duty_time = (
             28800  # Maximum delivery time for each vehicle (default: 8 hours)
@@ -235,15 +285,17 @@ class SingleDepotVRPRegular(DepotVRP):
         """
         Run the solver to find the optimal routes for the SDVRP.
         """
+        self.validate()
+
+        num_depots = len(self.depots)
         num_nodes = len(self.addresses)
         num_packages = len(self.orders)
+
         # Decision variables
         x = {}  # x[i][j][k] = 1 if vehicle k travels from stop i to stop j directly
         y = {}  # y[o][k] = 1 if vehicle k serves order o
         z = {}  # z[k] = 1 if vehicle k is used
         u = {}  # u[i][k] = arrival time of stop i at vehicle k
-
-        self.validate()
 
         # Create decision variables
         for k, (_, weight_cap, volume_cap, cruising_dist) in enumerate(self.vehicles):
@@ -257,12 +309,31 @@ class SingleDepotVRPRegular(DepotVRP):
                 y[o, k] = self.model.NewBoolVar(f"y_{o}_{k}")
 
         # Constraints
-        # Constraint 1: Routing
+        # Constraint 1: Depot Assignment
+        for k in range(len(self.vehicles)):
+            depot_idx = self.depot_vehicle_mapping[k]
+
+            # 1a. Vehicle k can only leave from and return to its assigned depot
+            self.model.Add(
+                sum(x[depot_idx, j, k] for j in range(num_depots, num_nodes)) == z[k]
+            )
+            self.model.Add(
+                sum(x[i, depot_idx, k] for i in range(num_depots, num_nodes)) == z[k]
+            )
+
+            # 1b. Vehicle cannot travel between depots
+            for other_depot in range(num_depots):
+                if other_depot != depot_idx:
+                    for j in range(num_nodes):
+                        self.model.Add(x[other_depot, j, k] == 0)
+                        self.model.Add(x[j, other_depot, k] == 0)
+
+        # Constraint 2: Package Assignment and Routing
         for k in range(len(self.vehicles)):
             for o in range(num_packages):
-                stop_index = self.orders[o]["address_index"] + 1  # +1 for depot
-                # 1a. If package o is served by vehicle k,
-                # then there must be an incoming edge to the stop
+                stop_index = self.orders[o]["address_index"] + num_depots
+                # 2a. If the package o is served by vehicle k,
+                # then we need to ensure an incoming flow to the stop.
                 self.model.Add(
                     sum(
                         x[i, stop_index, k] for i in range(num_nodes) if i != stop_index
@@ -270,19 +341,16 @@ class SingleDepotVRPRegular(DepotVRP):
                     >= y[o, k]
                 )
 
-            # Flow conservation (incoming flow = outgoing flow)
-            for h in range(num_nodes):
-                if h == 0:  # 1b. Depot flow
-                    self.model.Add(sum(x[0, j, k] for j in range(1, num_nodes)) == z[k])
-                    self.model.Add(sum(x[i, 0, k] for i in range(1, num_nodes)) == z[k])
-                else:  # 1c. Non-depot flow
-                    self.model.Add(
-                        sum(x[i, h, k] for i in range(num_nodes) if i != h)
-                        == sum(x[h, j, k] for j in range(num_nodes) if j != h)
-                    )
-        # Constraint 2 & 3: Vehicle Capacity and Usage
+            depot_idx = self.depot_vehicle_mapping
+            for h in range(num_depots, num_nodes):
+                # 2b. For each stop, the incoming flow must equal the outgoing flow
+                self.model.Add(
+                    sum(x[i, h, k] for i in range(num_nodes) if i != h)
+                    == sum(x[h, j, k] for j in range(num_nodes) if j != h)
+                )
+
+        # Constraint 3: Vehicle Capacity
         for k, (_, weight_cap, volume_cap, cruising_dist) in enumerate(self.vehicles):
-            # Constraint 2: Vehicle Capacity
             self.model.Add(
                 sum(self.weights[o] * y[o, k] for o in range(num_packages))
                 <= weight_cap
@@ -292,21 +360,22 @@ class SingleDepotVRPRegular(DepotVRP):
                 <= volume_cap
             )
 
-            # Constraint 3: Vehicle Usage
-            # z[k] = 1 iff any package is served
+        # Constraint 4: Vehicle Usage
+        for k in range(len(self.vehicles)):
             package_assignments = [y[o, k] for o in range(num_packages)]
             self.model.AddMaxEquality(z[k], package_assignments)
 
-        # Constraint 4: Miller-Tucker-Zemlin (MTZ) Subtour Elimination
+        # Constraint 5: Miller-Tucker-Zemlin (MTZ) Subtour Elimination
         # See https://en.wikipedia.org/wiki/Travelling_salesman_problem
         for k in range(len(self.vehicles)):
-            for i in range(1, num_nodes):
-                for j in range(1, num_nodes):
+            for i in range(num_depots, num_nodes):
+                for j in range(num_depots, num_nodes):
                     if i != j:
                         self.model.Add(
                             u[i, k] + 1 <= u[j, k] + (num_nodes) * (1 - x[i, j, k])
                         )
-        # Constraint 5: Time Constraints (travel time + stopover time)
+
+        # Constraint 6: Time Constraints (travel time + stopover time)
         for k in range(len(self.vehicles)):
             travel_time = sum(
                 int(self.route_durations[i][j]) * x[i, j, k]
@@ -317,26 +386,27 @@ class SingleDepotVRPRegular(DepotVRP):
 
             stopover_time = 0
             unique_stops = set(
-                self.orders[o]["address_index"] + 1 for o in range(num_packages)
+                self.orders[o]["address_index"] + num_depots
+                for o in range(num_packages)
             )
             for stop_index in unique_stops:
                 stop_visited = self.model.NewBoolVar(f"stop_visited_{stop_index}_{k}")
                 packages_at_stop = [
                     o
                     for o in range(num_packages)
-                    if self.orders[o]["address_index"] + 1 == stop_index
+                    if self.orders[o]["address_index"] + num_depots == stop_index
                 ]
                 for o in packages_at_stop:
-                    # 5b. If package o is assigned to vehicle k, then the stop must be visited
+                    # 6b. If package o is assigned to vehicle k, then the stop must be visited
                     self.model.Add(stop_visited >= y[o, k])
-                # 5c. If the stop is visited,
+                # 6c. If the stop is visited,
                 # then at least one package must be assigned to vehicle k
                 self.model.Add(stop_visited <= sum(y[o, k] for o in packages_at_stop))
                 stopover_time += int(self.stopping_time[stop_index]) * stop_visited
-            # 5a. Total travel time + stopover time must not exceed max duty time
+            # 6a. Total travel time + stopover time must not exceed max duty time
             self.model.Add(travel_time + stopover_time <= self.max_duty_time)
 
-        # Constraint 6: Distance Constraint
+        # Constraint 7: Distance Constraint
         # The total travel distance must not exceed the maximum cruising
         # distance of the vehicle
         for k, (_, _, _, cruising_dist) in enumerate(self.vehicles):
@@ -350,7 +420,7 @@ class SingleDepotVRPRegular(DepotVRP):
                 <= cruising_dist
             )
 
-        # Constraint 7: Assignment Constraints
+        # Constraint 8: Assignment Constraints
         # Each package is assigned to exactly one vehicle
         for o in range(num_packages):
             self.model.Add(sum(y[o, k] for k in range(len(self.vehicles))) == 1)
@@ -383,6 +453,7 @@ class SingleDepotVRPRegular(DepotVRP):
             package_assignments = []
 
             for k in range(len(self.vehicles)):
+                depot_idx = self.depot_vehicle_mapping[k]
                 route = [0]
                 curr = 0
                 while True:
@@ -394,8 +465,8 @@ class SingleDepotVRPRegular(DepotVRP):
                         ),
                         None,
                     )
-                    if nxt is None or nxt == 0:
-                        route.append(0)
+                    if nxt is None or nxt == depot_idx:
+                        route.append(depot_idx)
                         break
                     route.append(nxt)
                     curr = nxt
@@ -434,6 +505,7 @@ class SingleDepotVRPRegular(DepotVRP):
                 "vehicle_usage": [
                     self.solver.Value(z[k]) for k in range(len(self.vehicles))
                 ],
+                "vehicle_depot_mapping": self.depot_vehicle_mapping,
                 "priority_cost": sum(
                     self.order_waiting_times[o] * self.solver.Value(y[o, k])
                     for k in range(len(self.vehicles))
@@ -447,74 +519,99 @@ class SingleDepotVRPRegular(DepotVRP):
     def generate_plan(self, solution, save_path: str | None = None):
         """
         Generate a human-readable plan from the solution.
+
+        Args:
+            solution (dict): The solution returned by the solver.
+            save_path (str | None): Path to save the generated plan as a
+                JSON-formatted file.
+
+        Returns:
+            list[dict]: A list of depot plans, each containing vehicle assignments
+                and stop details.
         """
-        plan = {
-            "depot": self.depots[0]["id"],
-            "depot_address": self.depots[0]["address"],
-            "departure_time": self.dept_time.isoformat(),
-        }
-        plan["assignments"] = {}
-        for k, route in enumerate(solution["routes"]):
-            vehicle_info = {}
-            vehicle_info["vehicle_model"] = self.vehicles[k][0]
-            if solution["vehicle_usage"][k] == 0:
-                vehicle_info["used"] = False
-                plan["assignments"][f"vehicle_{k}"] = vehicle_info
-                continue  # Skip vehicles that is not used
+        plans = []
+        for depot_idx, depot in enumerate(self.depots):
+            depot_plan = {
+                "depot": depot["id"],
+                "depot_address": depot["address"],
+                "departure_time": self.dept_time.isoformat(),
+            }
+            depot_plan["assignments"] = {}
+            for k, route in enumerate(solution["routes"]):
+                if depot_idx != solution["vehicle_depot_mapping"][k]:
+                    continue
+                vehicle_info = {}
+                vehicle_info["vehicle_model"] = self.vehicles[k][0]
+                if solution["vehicle_usage"][k] == 0:
+                    vehicle_info["used"] = False
+                    depot_plan["assignments"][f"vehicle_{k}"] = vehicle_info
+                    continue  # Skip vehicles that is not used
 
-            vehicle_info["used"] = True
-            vehicle_info["total_time"] = 0
-            vehicle_info["total_distance_mi"] = (
-                str(
-                    round(
-                        sum(
-                            self.route_distances[route[i]][route[i + 1]]
-                            for i in range(len(route) - 1)
+                vehicle_info["used"] = True
+                vehicle_info["total_time"] = 0
+                vehicle_info["total_distance_mi"] = (
+                    str(
+                        round(
+                            float(
+                                sum(
+                                    self.route_distances[route[i]][route[i + 1]]
+                                    for i in range(len(route) - 1)
+                                )
+                            )
+                            / 1609.34,
+                            2,
                         )
-                        / 1609.34,
-                        2,
                     )
+                    + " mi"
                 )
-                + " mi"
-            )
-            vehicle_info["stops"] = {}
-            for j, stop_index in enumerate(route[1:-1]):
-                stop_address = self.addresses[stop_index]
-                packages = solution["package_assignments"][k]
-                package_info = [
-                    self.orders[o]["id"]
-                    for o in packages
-                    if self.orders[o]["address_index"] + 1 == stop_index
-                ]
-                stop_info = {
-                    "address": stop_address,
-                    "packages": package_info,
-                    "travel_time": str(
-                        round(self.route_durations[route[j]][route[j + 1]] / 60.0, 2)
+                vehicle_info["stops"] = {}
+                for j, stop_index in enumerate(route[1:-1]):
+                    stop_address = self.addresses[stop_index]
+                    packages = solution["package_assignments"][k]
+                    package_info = [
+                        self.orders[o]["id"]
+                        for o in packages
+                        if self.orders[o]["address_index"] + 1 == stop_index
+                    ]
+                    stop_info = {
+                        "address": stop_address,
+                        "packages": package_info,
+                        "travel_time": str(
+                            round(
+                                float(self.route_durations[route[j]][route[j + 1]])
+                                / 60.0,
+                                2,
+                            )
+                        )
+                        + " min",
+                        "travel_distance": str(
+                            round(
+                                float(self.route_distances[route[j]][route[j + 1]])
+                                / 1609.34,
+                                2,
+                            )
+                        )
+                        + " mi",
+                        "stopover_time": str(
+                            round(self.stopping_time[stop_index] / 60.0, 2)
+                        )
+                        + " min",
+                    }
+                    vehicle_info["stops"][f"stop_{j}"] = stop_info
+                    vehicle_info["total_time"] += (
+                        self.route_durations[route[j]][route[j + 1]]
+                        + self.stopping_time[stop_index]
                     )
-                    + " min",
-                    "travel_distance": str(
-                        round(self.route_distances[route[j]][route[j + 1]] / 1609.34, 2)
-                    )
-                    + " mi",
-                    "stopover_time": str(
-                        round(self.stopping_time[stop_index] / 60.0, 2)
-                    )
-                    + " min",
-                }
-                vehicle_info["stops"][f"stop_{j}"] = stop_info
-                vehicle_info["total_time"] += (
-                    self.route_durations[route[j]][route[j + 1]]
-                    + self.stopping_time[stop_index]
-                )
 
-            vehicle_info["total_time"] = (
-                str(round(vehicle_info["total_time"] / 3600.0, 2)) + " hrs"
-            )
-            plan["assignments"][f"vehicle_{k}"] = vehicle_info
+                vehicle_info["total_time"] = (
+                    str(round(vehicle_info["total_time"] / 3600.0, 2)) + " hrs"
+                )
+                depot_plan["assignments"][f"vehicle_{k}"] = vehicle_info
+
+            plans.append(depot_plan)
 
         if save_path:
             with open(save_path, "w") as f:
-                json.dump(plan, f, indent=4)
+                json.dump(plans, f, indent=4)
 
-        return plan
+        return plans

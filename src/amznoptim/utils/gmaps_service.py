@@ -211,7 +211,7 @@ class RouteMatrix(Route):
                 "The total number of origins and destinations must not exceed 650."
             )
 
-    def process_route(self, data):
+    def process_route(self, data) -> dict[str, np.ndarray]:
         """
         Processes the route matrix data and extracts distances and durations.
         Returns a dictionary with distance in meters and duration in seconds.

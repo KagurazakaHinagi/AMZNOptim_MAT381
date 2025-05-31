@@ -56,7 +56,7 @@ WIP
 
 ## Constraint Programming Spec
 
-### Single-Depot VRP
+### Depot VRP for Amazon Regular Orders
 
 #### Decision Variables
 
@@ -78,66 +78,75 @@ WIP
 - $T$: maximum driver duty time.
 - $K$: total number of available trucks.
 - $N$: total number of distinct addresses in the order list.
+- $M$: total number of depots.
 - $O$: total number of orders in the order.
 - $s(o)$: stop index of order $o$.
+- $d(k)$: depot index assigned to vehicle $k$.
 
 #### Objective and constraints
 
 ```math
 \begin{aligned}
-    \text{minimize} &\space \sum_{k=1}^{K}\sum_{i=0}^N\sum_{j=0}^N (t_{i, j}x_{i, j, k}
-                        +\hat{t}_{j} y_{j, k})
+    \text{minimize} &\space \sum_{k=1}^{K}\sum_{i=0}^{N+M-1}\sum_{j=0}^{N+M-1} t_{i, j}x_{i, j, k}
+                        +\sum_{k=1}^K\sum_{j=M}^{N+M-1} \hat{t}_{j} y_{j, k}
                         -\alpha \sum_{k=1}^K\sum_{o=1}^{O} P_oy_{o, k}
                         +\beta \sum_{k=1}^K z_k & \cr
-    \text{s.t.}     &\space \sum_{i=0,i\ne s(o)}^N x_{i, s(o),k} \ge y_{o, k},
-                        \quad \forall o, k & \text{(1a)} \cr
-                    &\space \sum_{j=1}^N x_{0, j, k}=\sum_{i=1}^N x_{i, 0, k}=z_k,
-                        \quad \forall k & \text{(1b)} \cr
-                    &\space \sum_{i=0,i\ne h}^N x_{i, h, k} =\sum_{j=0,j\ne h}^N x_{h, j, k},
-                        \quad \forall k, h\in [n] & \text{(1c)} \cr
+    \text{s.t.}     &\space \sum_{j=M}^{N+M-1} x_{d(k), j, k} = z_k
+                        =\sum_{i=M}^{N+M-1} x_{i, d(k), k},
+                        \quad \forall k & \text{(1a)} \cr
+                    &\space x_{m,j,k} = x_{i,m,k} = 0,
+                        \quad \forall k, i, j, m \ne d(k) & \text{(1b)} \cr
+                    &\space \sum_{i=0,i\ne s(o)+M-1}^{N+M-1} x_{i, s(o)+M-1,k} \ge y_{o, k},
+                        \quad \forall o, k & \text{(2a)} \cr
+                    &\space \sum_{i=0,i\ne h}^{N+M-1} x_{i, h, k} =\sum_{j=0,j\ne h}^{N+M-1} x_{h, j, k},
+                        \quad \forall k, h\in \{M,\dots,N+M-1\} & \text{(2b)} \cr
                     &\space \sum_{o=1}^{O} w_o y_{o,k} \le W_k, \space \sum_{o=1}^{O} v_o y_{o,k} \le V_k,
-                        \quad \forall k & \text{(2)} \cr
-                    &\space z_k=\max \{y_{o, k}: o \in \{1, \dots, O\}\},
                         \quad \forall k & \text{(3)} \cr
-                    &\space u_{i,k}+1 \le u_{j,k} + N\cdot (1 - x_{i, j, k}),
-                        \quad \forall i \ne j,k & \text{(4)} \cr
-                    &\space \sum_{i=0}^N \sum_{j=0, j\ne i}^N t_{i, j}x_{i, j, k}+\sum_{j \in S_k} \hat{t}_j
+                    &\space z_k=\max \{y_{o, k}: o \in \{1, \dots, O\}\},
+                        \quad \forall k & \text{(4)} \cr
+                    &\space u_{i,k}+1 \le u_{j,k} + (N + M) \cdot (1 - x_{i, j, k}),
+                        \quad \forall i, j \in \{M,\dots, N+M-1\},i \ne j,k & \text{(5)} \cr
+                    &\space \sum_{i=0}^{N+M-1} \sum_{j=0, j\ne i}^{N+M-1} t_{i, j}x_{i, j, k}+\sum_{j=M}^{N+M-1} \hat{t}_j
                         \cdot \text{vis}_{j,k} \le T,
-                        \quad \forall k & \text{(5a)} \cr
+                        \quad \forall k & \text{(6a)} \cr
                     &\space \text{vis}_{j,k} \ge y_{o,k},
-                        \quad \forall k,o:s(o)=j & \text{(5b)} \cr
-                    &\space \text{vis}_{j,k} \le \sum_{o:s(o)=j} y_{o,k},
-                        \quad \forall j\in S_k,k & \text{(5c)} \cr
-                    &\space \sum_{i=0}^N \sum_{j=0, j\ne i}^N d_{i,j}x_{i,j,k}\le D_k,
-                        \quad \forall k & \text{(6)} \cr
+                        \quad \forall k,o:s(o)=j-M+1 & \text{(6b)} \cr
+                    &\space \text{vis}_{j,k} \le \sum_{o:s(o)=j-M+1} y_{o,k},
+                        \quad \forall j\in \{M,\dots,N+M-1\},k & \text{(6c)} \cr
+                    &\space \sum_{i=0}^{N+M-1} \sum_{j=0, j\ne i}^{N+M-1} d_{i,j}x_{i,j,k}\le D_k,
+                        \quad \forall k & \text{(7)} \cr
                     &\space \sum_{k=1}^K y_{o,k}=1,
-                        \quad \forall o & \text{(7)} \cr
-                    &\space x_{i,j,k},y_{o,k},z_k,\text{vis}_{j,k}\in \{0,1\} \cr
-                    &\space u_{i,k} \in [0,N]
+                        \quad \forall o & \text{(8)} \cr
+                    &\space x_{i,j,k},y_{o,k},z_k,\text{vis}_{j,k}\in \{0,1\} \quad \space u_{i,k} \in \{0,\dots,N+M-1\}
 \end{aligned}
 ```
 
 ##### Explanation of constraints
 
-1. Routing Constraints:\
-    (1a). Ensure the served orders have incoming edges to their stops.\
-    (1b-1c). Enforce flow conservaton separately for depot and non-depot nodes.
-2. Vehicle Capacity Constraints:\
-    Each vehicle cannot load packages that the total exceeds the maximum capacity of weight or volume.
-3. Vehicle Usage Constraint:\
-    If any package is assigned to a specific vehicle, then that vehicle need to be marked as chosen.
-4. Subtour Elimination (Miller-Tucker-Zemlin):\
-    Prevent disconnected loops by constraining on the order of the visiting time.\
-    See [Wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Miller%E2%80%93Tucker%E2%80%93Zemlin_formulation).
-5. Time Constraints:\
-    (5a). The total travel time + stopover time must not exceeds the driver duty time.\
-    (5b-5c). A stop must be visited iff some package corresponding to that stop is assigned to the vehicle.
-6. Distance Constraint:\
-    The total traveling distance must not exceed the vehicle's cruising range.
-7. Package Assignment Constraint:\
-    Each package is assigned to exactly one vehicle.
+1. Depot Assignment:\
+   (1a). The vehicle $k$ can only depart from and return to its assigned depot $d(k)$ when it's been chosen to use.\
+   (1b). The vehicle $k$ do not commute to other depots except its assigned one within its planned route.
+2. Package Assignment and Routing:\
+   (2a). There's an incoming route to the stop $s(o)$ when order $o$ is assigned to be delivered by vehicle $k$.\
+   (2b). Flow conservation: For each stop served by vehicle $k$, there's exactly one incoming route and one outgoing route.
+3. Vehicle Capacity:\
+   Each vehicle $k$ cannot load packages in such a way that the total exceeds the maximum capacity of weight or volume of that vehicle $k$.
+4. Vehicle Usage:\
+   The vehicle $k$ would be in use if there's any packages assigned to $k$.
+5. Subtour Elimination (Miller-Tucker-Zemlin):\
+   Prevent disconnected loops by constraining on the order of the visiting time.\
+   See [Wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Miller%E2%80%93Tucker%E2%80%93Zemlin_formulation).
+6. Time Constraints:\
+   (6a). The total travel time + stopover time does not exceeds the driver duty time $T$.\
+   (6b-6c). A stop $s(o)$ is visited iff some package corresponding to that stop is assigned to the vehicle $k$.
+7. Distance Constraint:\
+   The total traveling distance does not exceed the vehicle's cruising range $D_k$.
+8. Package Assignment Constraint:\
+   Each package is assigned to exactly one vehicle.
 
-### Multi-Depot VRP
+### Depot VRP for Amazon Same-Day Orders
+
+> Same-Day orders including Amazon Fresh, Prime Now
 
 WIP
 
