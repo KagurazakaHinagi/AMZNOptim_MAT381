@@ -101,19 +101,17 @@ WIP
                         \quad \forall k & \text{(3)} \cr
                     &\space u_{i,k}+1 \le u_{j,k} + N\cdot (1 - x_{i, j, k}),
                         \quad \forall i \ne j,k & \text{(4)} \cr
-                    &\space \sum_{i=0}^N \sum_{j=0}^N t_{i, j}x_{i, j, k}+\sum_{j \in S_k} \hat{t}_j
+                    &\space \sum_{i=0}^N \sum_{j=0, j\ne i}^N t_{i, j}x_{i, j, k}+\sum_{j \in S_k} \hat{t}_j
                         \cdot \text{vis}_{j,k} \le T,
                         \quad \forall k & \text{(5a)} \cr
                     &\space \text{vis}_{j,k} \ge y_{o,k},
                         \quad \forall k,o:s(o)=j & \text{(5b)} \cr
                     &\space \text{vis}_{j,k} \le \sum_{o:s(o)=j} y_{o,k},
                         \quad \forall j\in S_k,k & \text{(5c)} \cr
-                    &\space \sum_{i=0}^N \sum_{j=0}^N d_{i,j}x_{i,j,k}\le D_k,
+                    &\space \sum_{i=0}^N \sum_{j=0, j\ne i}^N d_{i,j}x_{i,j,k}\le D_k,
                         \quad \forall k & \text{(6)} \cr
                     &\space \sum_{k=1}^K y_{o,k}=1,
                         \quad \forall o & \text{(7)} \cr
-                    &\space \sum_{k=1}^K \sum_{i=0}^N x_{i,j,k}=1,
-                        \quad \forall j & \text{(8)} \cr
                     &\space x_{i,j,k},y_{o,k},z_k,\text{vis}_{j,k}\in \{0,1\} \cr
                     &\space u_{i,k} \in [0,N]
 \end{aligned}
@@ -136,10 +134,8 @@ WIP
     (5b-5c). A stop must be visited iff some package corresponding to that stop is assigned to the vehicle.
 6. Distance Constraint:\
     The total traveling distance must not exceed the vehicle's cruising range.
-7. Package Assignment Constraint:
+7. Package Assignment Constraint:\
     Each package is assigned to exactly one vehicle.
-8. Stop Assignment Constraint:
-    Each stop is visited exactly once.
 
 ### Multi-Depot VRP
 
