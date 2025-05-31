@@ -62,7 +62,7 @@ WIP
 
 - $x_{i, j, k} \in \\{0, 1\\}$: truck $k$ travels directly from stop $i$ to stop $j$.
 - $y_{o, k} \in \\{0, 1\\}$: order $o$ is served by truck $k$.
-- $u_{i, k} \ge 0$: "timestamp" when truck $k$ arrives at stop $i$.
+- $u_{i, k} \in \\{0, \dots, N+M-1\\}$: "timepoint" when truck $k$ arrives at stop $i$.
 - $z_{k} \in \\{0, 1\\}$: truck $k$ is used.
 - $\text{vis}_{j, k} \in \\{0, 1\\}$: (auxiliary variable) stop $j$ is visited by vehicle $k$.
 
@@ -117,7 +117,6 @@ WIP
                         \quad \forall k & \text{(7)} \cr
                     &\space \sum_{k=1}^K y_{o,k}=1,
                         \quad \forall o & \text{(8)} \cr
-                    &\space x_{i,j,k},y_{o,k},z_k,\text{vis}_{j,k}\in \{0,1\} \quad \space u_{i,k} \in \{0,\dots,N+M-1\}
 \end{aligned}
 ```
 
