@@ -8,14 +8,6 @@ import requests
 VALID_ROUTING_PREFS = ["TRAFFIC_UNAWARE", "TRAFFIC_AWARE", "TRAFFIC_AWARE_OPTIMAL"]
 
 
-def save_to_csv(data: dict, file_path):
-    """
-    Helpers function to save data to a CSV file.
-    """
-    df = pd.DataFrame(data)
-    df.to_csv(file_path, index=False)
-
-
 class Route:
     def __init__(self, api_key=None):
         """
@@ -252,10 +244,7 @@ class AddressValidation:
         """
         self.base_url = "https://addressvalidation.googleapis.com/v1:validateAddress"
         self.api_key = api_key or os.getenv("GMAPS_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "API key is required. Set it as an environment variable or pass it directly."
-            )
+
         self.headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
@@ -308,5 +297,32 @@ class AddressValidation:
         return data
 
     def process_address_validation(self, data):
-        pass  # TODO: Implement this method to process the address validation data
-        # for stopover windows estimation.
+        """
+        Processes the address validation data and extracts the address type, USPS
+        carrier route code, and formatted address.
+        """
+        result = data.get("result", {})
+        if not result:
+            raise ValueError("No address validation result found.")
+
+        formatted_address = result["address"]["formattedAddress"]
+
+        is_residential = result["metadata"].get("residential", False)
+        is_business = result["metadata"].get("business", False)
+        address_type = (
+            "RESIDENTIAL"
+            if is_residential
+            else "BUSINESS"
+            if is_business
+            else "UNKNOWN"
+        )
+
+        usps_carrier_route = None
+        if "uspsData" in result:
+            usps_carrier_route = result["uspsData"].get("carrierRoute", None)
+
+        return {
+            "formatted_address": formatted_address,
+            "address_type": address_type,
+            "usps_carrier_route": usps_carrier_route,
+        }

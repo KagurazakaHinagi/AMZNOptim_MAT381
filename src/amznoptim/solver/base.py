@@ -7,6 +7,7 @@ from amznoptim.utils.preprocess import (
     compute_waiting_times,
     fetch_route_matrix,
     fetch_vehicle_info,
+    calculate_stopover_times,
 )
 
 
@@ -21,7 +22,7 @@ class DepotVRPBase:
     Attributes:
         depots (list[dict]): List of depot data, each containing depot information.
         orders (list[dict]): List of order data, each containing order information.
-        stops (dict[str, list[str]]): Dictionary containing stop id and address.
+        stops (dict[str, list[any]]): Dictionary containing stop id, address, and max package count.
         addresses (list[str]): List of addresses derived from depots and stops.
         weights (list[float]): List of package weights in grams for each order.
         volumes (list[float]): List of package volumes in cubic milimeter for each order.
@@ -55,7 +56,8 @@ class DepotVRPBase:
         Args:
             depot_data (list[dict]): List of depot data, each containing depot information.
             order_data (list[dict]): List of order data, each containing order information.
-            address_data (dict[str, list[str]]): DIctionary containing stop id and address.
+            address_data (dict[str, list]): Dictionary containing stop id, address,
+                and max package count.
         """
         self.depots = depot_data
         self.orders = order_data
@@ -93,7 +95,13 @@ class DepotVRPBase:
             "This method should be implemented in subclasses to set the maximum solver time."
         )
 
-    def set_stopping_time(self, stopping_time: list[int] | int):
+    def set_stopping_time(
+        self,
+        stopping_time: list[int] | int | None = None,
+        validation_json: str | None = None,
+        validation_save_path: str | None = None,
+        api_key=None,
+    ):
         """
         Set the stopping time in seconds at each stop.
         If a single integer is provided, it will be used for all stops.
@@ -102,8 +110,15 @@ class DepotVRPBase:
             self.stopping_time = [0] * len(self.depots) + [stopping_time] * (
                 len(self.addresses) - len(self.depots)
             )
-        else:
+        elif isinstance(stopping_time, list):
             self.stopping_time = [0] * len(self.depots) + stopping_time
+        else:
+            self.stopping_time = [0] * len(self.depots) + calculate_stopover_times(
+                self.stops,
+                validation_json=validation_json,
+                save_path=validation_save_path,
+                api_key=api_key,
+            )
 
     def set_max_duty_time(self, max_duty_time: int):
         """
@@ -153,7 +168,8 @@ class DepotVRPBase:
         self.weights = [order["package_weight"] for order in order_data]
         self.volumes = [order["package_volume"] for order in order_data]
         self.order_waiting_times = [order["waiting_time"] for order in order_data]
-        self.stopping_time = [0] * len(self.addresses)
+        if not self.stopping_time:
+            self.stopping_time = [0] * len(self.addresses)
 
     def process_vehicle_data(self, vehicle_data_path: str):
         """
@@ -354,4 +370,3 @@ class DepotVRPBase:
                 json.dump(plans, f, indent=4)
 
         return plans
-

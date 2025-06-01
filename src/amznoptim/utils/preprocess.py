@@ -21,6 +21,7 @@ def order_info_from_csv(
     address_data = {
         "ids": [],
         "addresses": [],
+        "max_num_packages": [],
     }
     for i, row in df.iterrows():
         package_volume, package_dimension = fetch_packaging_info(
@@ -28,10 +29,12 @@ def order_info_from_csv(
         )
         try:
             address_index = address_data["ids"].index(row["customer_id"])
+            address_data["max_num_packages"][address_index] += 1
         except ValueError:
             address_data["ids"].append(row["customer_id"])
             address_index = len(address_data["ids"]) - 1
             address_data["addresses"].append(row["address"])
+            address_data["max_num_packages"].append(1)
         order_data.append(
             {
                 "id": i,
@@ -113,3 +116,69 @@ def fetch_vehicle_info(
             cruising_dist = all_vehicles["Regular"][k]["Max_distance"]
             vehicles.extend([(k, weight_cap, volume_cap, cruising_dist)] * v)
     return vehicles
+
+def calculate_stopover_times(
+    stop_info: dict,
+    validation_json: str | None = None,
+    save_path: str | None = None,
+    api_key=None,
+):
+    """
+    Calculates stopover times for each stop using Google Maps Address Validation API.
+    """
+    BASE_TIMES = {
+        "RESIDENTIAL": {
+            "C": 240,   # Residential + City: 4 minutes
+            "R": 360,   # Residential + Rural: 6 minutes
+            "H": 480,   # Residential + High-rise: 8 minutes
+        },
+        "BUSINESS": {
+            "C": 180,   # Business + City: 3 minutes
+            "R": 300,   # Business + Rural: 5 minutes
+            "H": 600,   # Business + High-rise: 10 minutes
+        }
+    }
+
+    PER_PACKAGE_TIME = {
+        "RESIDENTIAL": 60,  # 60 seconds for residential
+        "BUSINESS": 50,     # 50 seconds for business
+    }
+
+    from amznoptim.utils.gmaps_service import AddressValidation
+    validation_service = AddressValidation(api_key=api_key)
+    validation_responses = []
+    processed_info = []
+    if validation_json:
+        with open(validation_json, "r") as f:
+            validation_responses = json.load(f)
+
+    for idx, address in enumerate(stop_info["addresses"]):
+        validation_service.set_address(address)
+        if not validation_json:
+            response = validation_service.get_address_validation(
+                UspsCass=True)
+            validation_responses.append(response)
+        else:
+            response = validation_responses[idx]
+        processed_info.append(
+            validation_service.process_address_validation(response)
+        )
+
+    if save_path:
+        with open(save_path, "w") as f:
+            json.dump(validation_responses, f, indent=4)
+
+    stopover_times = []
+    for idx, info in enumerate(processed_info):
+        address_type = info["address_type"]
+        if address_type not in BASE_TIMES:
+            raise ValueError(f"Unknown address type: {address_type}")
+        carrier_route = info["usps_carrier_route"]
+        if carrier_route is None or carrier_route[0] not in BASE_TIMES[address_type]:
+            carrier_route = ["H"] # Treat as high-rise if no carrier route is available
+        base_time = BASE_TIMES[address_type][carrier_route[0]]
+        package_time = PER_PACKAGE_TIME[address_type] * stop_info["max_num_packages"][idx]
+        stopover_times.append(base_time + package_time)
+
+    print(stopover_times)
+    return stopover_times

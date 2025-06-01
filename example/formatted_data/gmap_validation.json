@@ -1,0 +1,2232 @@
+[
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "736 North 161st Place, Shoreline, WA 98133-5671, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98133-5671",
+                    "administrativeArea": "WA",
+                    "locality": "Shoreline",
+                    "addressLines": [
+                        "736 N 161st Pl"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "736"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "North 161st Place",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Shoreline",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98133"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "5671"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.7466134,
+                    "longitude": -122.3506412
+                },
+                "plusCode": {
+                    "globalCode": "84VVPJWX+JP"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.7465246,
+                        "longitude": -122.3507417
+                    },
+                    "high": {
+                        "latitude": 47.7466999,
+                        "longitude": -122.350519
+                    }
+                },
+                "featureSizeMeters": 13.4528265,
+                "placeId": "ChIJ05RrwN0QkFQRXwzYF3RD7qI",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "736 N 161ST PL, SHORELINE, WA, 98133"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C024",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "3089eda9-46a3-46a4-a158-2f1aa9ed4480"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "10808 Marine View Drive Southwest, Seattle, WA 98146-1615, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98146-1615",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "10808 Marine View Dr SW"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "10808"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Marine View Drive Southwest",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98146"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "1615"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5062804,
+                    "longitude": -122.3808786
+                },
+                "plusCode": {
+                    "globalCode": "84VVGJ49+GJ"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.5061768,
+                        "longitude": -122.3810208
+                    },
+                    "high": {
+                        "latitude": 47.5063471,
+                        "longitude": -122.3807505
+                    }
+                },
+                "featureSizeMeters": 15.709632,
+                "placeId": "ChIJC6DzOv9DkFQRPLlTy3CVH1Y",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "10808 MARINE VIEW DR SW, SEATTLE, WA, 98146"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C033",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "8027aded-8d2a-436b-a9f6-1ac938f4951d"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "10612 Sand Point Way Northeast, Seattle, WA 98125-6924, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98125-6924",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "10612 Sand Point Way NE"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "10612"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Sand Point Way Northeast",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98125"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "6924"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.7055501,
+                    "longitude": -122.2782578
+                },
+                "plusCode": {
+                    "globalCode": "84VVPP4C+6M"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.7054804,
+                        "longitude": -122.2783757
+                    },
+                    "high": {
+                        "latitude": 47.7056137,
+                        "longitude": -122.2781286
+                    }
+                },
+                "featureSizeMeters": 12.390823,
+                "placeId": "ChIJv4g4cMUTkFQRkcuUD9nRtFA",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "10612 SAND POINT WAY NE, SEATTLE, WA, 98125"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C051",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "37df7354-cf1a-47f5-9318-28dfe48987be"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE_PROXIMITY",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "11890 163rd Place, Bothell, WA 98011-6495, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98011-6495",
+                    "administrativeArea": "WA",
+                    "locality": "Bothell",
+                    "addressLines": [
+                        "11890 NE 163rd Pl"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "11890"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "163rd Place",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Bothell",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98011"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "6495"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.7463106,
+                    "longitude": -122.1821908
+                },
+                "plusCode": {
+                    "globalCode": "84VVPRW9+G4"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.7463106,
+                        "longitude": -122.1821908
+                    },
+                    "high": {
+                        "latitude": 47.7463106,
+                        "longitude": -122.1821908
+                    }
+                },
+                "placeId": "Ei4xMTg5MCAxNjNyZCBQbGFjZSwgQm90aGVsbCwgV0EgOTgwMTEtNjQ5NSwgVVNBIjESLwoUChIJCxkp_dgNkFQR8sXbaRbVSXIQ8lwqFAoSCV3GUuPYDZBUEd12j0-9wqPD",
+                "placeTypes": [
+                    "street_address"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "11890 NE 163RD PL, BOTHELL, WA, 98011"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C049",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "69873447-b95a-4d23-ac87-07f339851c9b"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "851 South Cloverdale Street, Seattle, WA 98108-4721, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98108-4721",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "851 S Cloverdale St"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "851"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "South Cloverdale Street",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98108"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "4721"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ],
+                "missingComponentTypes": [
+                    "subpremise"
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5262123,
+                    "longitude": -122.3206808
+                },
+                "plusCode": {
+                    "globalCode": "84VVGMGH+FP"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.5261403,
+                        "longitude": -122.3207581
+                    },
+                    "high": {
+                        "latitude": 47.5263311,
+                        "longitude": -122.3206209
+                    }
+                },
+                "featureSizeMeters": 14.428808,
+                "placeId": "ChIJdyUFGilCkFQRVNb8r72phKQ",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "851 S CLOVERDALE ST, SEATTLE, WA, 98108"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C006",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "5c2a5066-e0e8-4650-9a0d-cdd3ddafb930"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true
+            },
+            "address": {
+                "formattedAddress": "2914 South Main Street, Seattle, WA 98144, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98144",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "2914 South Main St"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "2914"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "South Main Street",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98144"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.6003081,
+                    "longitude": -122.2944296
+                },
+                "plusCode": {
+                    "globalCode": "84VVJP24+46"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.6002824,
+                        "longitude": -122.2944574
+                    },
+                    "high": {
+                        "latitude": 47.6003276,
+                        "longitude": -122.2943963
+                    }
+                },
+                "featureSizeMeters": 3.7947981,
+                "placeId": "ChIJJ4xKJOZqkFQRQgks-CUlrbM",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "2914 S MAIN ST, SEATTLE, WA, 98144"
+                },
+                "dpvFootnote": "A1",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "f8b86244-28d0-4a91-b2f9-13acdb64e49c"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "302 Pacific Avenue South, Pacific, WA 98047-1404, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98047-1404",
+                    "administrativeArea": "WA",
+                    "locality": "Pacific",
+                    "addressLines": [
+                        "302 Pacific Ave S"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "302"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Pacific Avenue South",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Pacific",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98047"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "1404"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.2644355,
+                    "longitude": -122.2403118
+                },
+                "plusCode": {
+                    "globalCode": "84VV7Q75+QV"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.2643361,
+                        "longitude": -122.2403734
+                    },
+                    "high": {
+                        "latitude": 47.2645348,
+                        "longitude": -122.2402501
+                    }
+                },
+                "featureSizeMeters": 11.993364,
+                "placeId": "ChIJz1zSRiT4kFQRTuUbeuMxltM",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "302 PACIFIC AVE S, PACIFIC, WA, 98047"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C006",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "73b6d775-5465-4499-b9a6-f525ab996c4f"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "35907 Southeast Kennedy Court, Snoqualmie, WA 98065-8700, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98065-8700",
+                    "administrativeArea": "WA",
+                    "locality": "Snoqualmie",
+                    "addressLines": [
+                        "35907 SE Kennedy Ct"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "35907"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Southeast Kennedy Court",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Snoqualmie",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98065"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "8700"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5418253,
+                    "longitude": -121.8612293
+                },
+                "plusCode": {
+                    "globalCode": "84VWG4RQ+PG"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.5417503,
+                        "longitude": -121.8613598
+                    },
+                    "high": {
+                        "latitude": 47.5419061,
+                        "longitude": -121.8611096
+                    }
+                },
+                "featureSizeMeters": 13.29199,
+                "placeId": "ChIJdyYqt8p7kFQR64J3ah8vGXo",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "35907 SE KENNEDY CT, SNOQUALMIE, WA, 98065"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "R105",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "60123b96-868b-4796-848c-865e1c49ab01"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "18111 60th Avenue Northeast, Kenmore, WA 98028-4542, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98028-4542",
+                    "administrativeArea": "WA",
+                    "locality": "Kenmore",
+                    "addressLines": [
+                        "18111 60th Ave NE"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "18111"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "60th Avenue Northeast",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Kenmore",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98028"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "4542"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.7600576,
+                    "longitude": -122.2652363
+                },
+                "plusCode": {
+                    "globalCode": "84VVQP6M+2W"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.759998,
+                        "longitude": -122.2654013
+                    },
+                    "high": {
+                        "latitude": 47.7601584,
+                        "longitude": -122.2650592
+                    }
+                },
+                "featureSizeMeters": 17.345818,
+                "placeId": "ChIJuY4mntERkFQRyXuL8J-43J8",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "18111 60TH AVE NE, KENMORE, WA, 98028"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C017",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "35a5f20a-18b8-4a19-940c-524a1c13a68d"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "1712 35th Avenue, Seattle, WA 98122-3413, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98122-3413",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "1712 35th Ave"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "1712"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "35th Avenue",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98122"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "3413"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.6169527,
+                    "longitude": -122.2878674
+                },
+                "plusCode": {
+                    "globalCode": "84VVJP86+QV"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.6168822,
+                        "longitude": -122.2879297
+                    },
+                    "high": {
+                        "latitude": 47.6170233,
+                        "longitude": -122.2878053
+                    }
+                },
+                "featureSizeMeters": 9.134238,
+                "placeId": "ChIJxZiqqihrkFQRu2tnAyVlg5k",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "1712 35TH AVE, SEATTLE, WA, 98122"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C054",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "68a7cb1d-db18-41b1-b995-2414124bb92a"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "260 Ferndale Court Northeast, Renton, WA 98056-5813, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98056-5813",
+                    "administrativeArea": "WA",
+                    "locality": "Renton",
+                    "addressLines": [
+                        "260 Ferndale Ct NE"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "260"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Ferndale Court Northeast",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Renton",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98056"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "5813"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.4858635,
+                    "longitude": -122.1834647
+                },
+                "plusCode": {
+                    "globalCode": "84VVFRP8+8J"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.4857899,
+                        "longitude": -122.1835682
+                    },
+                    "high": {
+                        "latitude": 47.4858992,
+                        "longitude": -122.1833232
+                    }
+                },
+                "featureSizeMeters": 13.417564,
+                "placeId": "ChIJAfIlKwhokFQRoaM8nokrtmw",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "260 FERNDALE CT NE, RENTON, WA, 98056"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C061",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "8a392e1f-6d4c-4e9e-8397-9915d0f7ad94"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "1530 5th Place, Kirkland, WA 98033-5644, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98033-5644",
+                    "administrativeArea": "WA",
+                    "locality": "Kirkland",
+                    "addressLines": [
+                        "1530 5th Pl"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "1530"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "5th Place",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Kirkland",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98033"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "5644"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.6883249,
+                    "longitude": -122.1974692
+                },
+                "plusCode": {
+                    "globalCode": "84VVMRQ3+82"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.6882413,
+                        "longitude": -122.1975785
+                    },
+                    "high": {
+                        "latitude": 47.6884083,
+                        "longitude": -122.1973515
+                    }
+                },
+                "featureSizeMeters": 12.807518,
+                "placeId": "ChIJdVmEsZISkFQR3az5FxOblxc",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "1530 5TH PL, KIRKLAND, WA, 98033"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C057",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "ea76b7c8-d5ed-45dd-97db-3c23c1dcaeec"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "4327 86th Avenue Southeast, Mercer Island, WA 98040-4124, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98040-4124",
+                    "administrativeArea": "WA",
+                    "locality": "Mercer Island",
+                    "addressLines": [
+                        "4327 86th Ave SE"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "4327"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "86th Avenue Southeast",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Mercer Island",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98040"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "4124"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5681968,
+                    "longitude": -122.2246937
+                },
+                "plusCode": {
+                    "globalCode": "84VVHQ9G+74"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.5681968,
+                        "longitude": -122.2246937
+                    },
+                    "high": {
+                        "latitude": 47.5681968,
+                        "longitude": -122.2246937
+                    }
+                },
+                "placeId": "ChIJTcYSd9FrkFQRVIaHeWSgVuM",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "4327 86TH AVE SE, MERCER ISLAND, WA, 98040"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C022",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "0725b569-538e-479b-a277-a416c41b93db"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "4531 40th Avenue Southwest, Seattle, WA 98116-4214, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98116-4214",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "4531 40th Ave SW"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "4531"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "40th Avenue Southwest",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98116"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "4214"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5619066,
+                    "longitude": -122.3831683
+                },
+                "plusCode": {
+                    "globalCode": "84VVHJ68+QP"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.5618669,
+                        "longitude": -122.3832245
+                    },
+                    "high": {
+                        "latitude": 47.5619431,
+                        "longitude": -122.3830908
+                    }
+                },
+                "featureSizeMeters": 7.300882,
+                "placeId": "ChIJSdnf-_hAkFQR2pPCV_dHlDA",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "4531 40TH AVE SW, SEATTLE, WA, 98116"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C051",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "61cc3962-7fc8-4049-8bc9-2ec29ef9dd75"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "14429 Southeast 17th Street, Bellevue, WA 98007-6002, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98007-6002",
+                    "administrativeArea": "WA",
+                    "locality": "Bellevue",
+                    "addressLines": [
+                        "14429 SE 17th St"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "14429"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Southeast 17th Street",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Bellevue",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98007"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "6002"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5952553,
+                    "longitude": -122.1459955
+                },
+                "plusCode": {
+                    "globalCode": "84VVHVW3+4J"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.595176,
+                        "longitude": -122.1461566
+                    },
+                    "high": {
+                        "latitude": 47.5953092,
+                        "longitude": -122.1458754
+                    }
+                },
+                "featureSizeMeters": 14.956113,
+                "placeId": "ChIJCw_hriRskFQRvGC1c5gsJLU",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "14429 SE 17TH ST, BELLEVUE, WA, 98007"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C017",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "5b1e9234-9d3e-4d41-853b-8bce956a371f"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "6216 20th Avenue Northwest, Seattle, WA 98107-2353, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98107-2353",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "6216 20th Ave NW"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "6216"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "20th Avenue Northwest",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98107"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "2353"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.67441,
+                    "longitude": -122.3818321
+                },
+                "plusCode": {
+                    "globalCode": "84VVMJF9+Q7"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.67441,
+                        "longitude": -122.3818321
+                    },
+                    "high": {
+                        "latitude": 47.67441,
+                        "longitude": -122.3818321
+                    }
+                },
+                "placeId": "ChIJy0hYF84VkFQR3qLdMGAL0Zc",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "6216 20TH AVE NW, SEATTLE, WA, 98107"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C021",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "6a424ef0-0ec9-4294-8402-1f4ebffc7e09"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "26037 Marine View Drive South, Des Moines, WA 98198-9125, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98198-9125",
+                    "administrativeArea": "WA",
+                    "locality": "Des Moines",
+                    "addressLines": [
+                        "26037 Marine View Dr S"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "26037"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Marine View Drive South",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Des Moines",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98198"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "9125"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.3678143,
+                    "longitude": -122.3232133
+                },
+                "plusCode": {
+                    "globalCode": "84VV9M9G+4P"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.3677192,
+                        "longitude": -122.3233563
+                    },
+                    "high": {
+                        "latitude": 47.3679385,
+                        "longitude": -122.3230119
+                    }
+                },
+                "featureSizeMeters": 20.513075,
+                "placeId": "ChIJIYtozBdakFQRRFRRiJEZliI",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "26037 MARINE VIEW DR S, DES MOINES, WA, 98198"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C019",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "c13fb649-59ae-40f6-ba11-4eed75ae3893"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "1011 North 36th Street, Seattle, WA 98103-8824, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98103-8824",
+                    "administrativeArea": "WA",
+                    "locality": "Seattle",
+                    "addressLines": [
+                        "1011 N 36th St"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "1011"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "North 36th Street",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Seattle",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98103"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "8824"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.6504101,
+                    "longitude": -122.3455132
+                },
+                "plusCode": {
+                    "globalCode": "84VVMM23+5Q"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.6503578,
+                        "longitude": -122.3455688
+                    },
+                    "high": {
+                        "latitude": 47.6504818,
+                        "longitude": -122.3454413
+                    }
+                },
+                "featureSizeMeters": 9.621362,
+                "placeId": "ChIJfzRnBAEVkFQR24_0XxtbPec",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "1011 N 36TH ST, SEATTLE, WA, 98103"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "C061",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "3661d149-a43a-43a8-ab78-d5b5cf41e79a"
+    },
+    {
+        "result": {
+            "verdict": {
+                "inputGranularity": "PREMISE",
+                "validationGranularity": "PREMISE",
+                "geocodeGranularity": "PREMISE",
+                "addressComplete": true,
+                "hasInferredComponents": true
+            },
+            "address": {
+                "formattedAddress": "1575 14th Place Northeast, Issaquah, WA 98029-7680, USA",
+                "postalAddress": {
+                    "regionCode": "US",
+                    "languageCode": "en",
+                    "postalCode": "98029-7680",
+                    "administrativeArea": "WA",
+                    "locality": "Issaquah",
+                    "addressLines": [
+                        "1575 14th Pl NE"
+                    ]
+                },
+                "addressComponents": [
+                    {
+                        "componentName": {
+                            "text": "1575"
+                        },
+                        "componentType": "street_number",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "14th Place Northeast",
+                            "languageCode": "en"
+                        },
+                        "componentType": "route",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "Issaquah",
+                            "languageCode": "en"
+                        },
+                        "componentType": "locality",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "WA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "administrative_area_level_1",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "98029"
+                        },
+                        "componentType": "postal_code",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "USA",
+                            "languageCode": "en"
+                        },
+                        "componentType": "country",
+                        "confirmationLevel": "CONFIRMED"
+                    },
+                    {
+                        "componentName": {
+                            "text": "7680"
+                        },
+                        "componentType": "postal_code_suffix",
+                        "confirmationLevel": "CONFIRMED",
+                        "inferred": true
+                    }
+                ]
+            },
+            "geocode": {
+                "location": {
+                    "latitude": 47.5421288,
+                    "longitude": -122.011664
+                },
+                "plusCode": {
+                    "globalCode": "84VVGXRQ+V8"
+                },
+                "bounds": {
+                    "low": {
+                        "latitude": 47.5420724,
+                        "longitude": -122.0118262
+                    },
+                    "high": {
+                        "latitude": 47.5421852,
+                        "longitude": -122.0115017
+                    }
+                },
+                "featureSizeMeters": 13.702028,
+                "placeId": "ChIJyf7p3_RvkFQRwb9La-ShgIM",
+                "placeTypes": [
+                    "premise"
+                ]
+            },
+            "metadata": {
+                "business": false,
+                "poBox": false,
+                "residential": true
+            },
+            "uspsData": {
+                "standardizedAddress": {
+                    "firstAddressLine": "1575 14TH PL NE, ISSAQUAH, WA, 98029"
+                },
+                "dpvFootnote": "A1",
+                "carrierRoute": "R023",
+                "cassProcessed": true
+            }
+        },
+        "responseId": "c4e5b07e-5f50-4b4f-8356-78146a7018e9"
+    }
+]
