@@ -20,5 +20,17 @@
             "Compact Sedan" : 4,
             "Midsize Sedan" : 2
         }
+    },
+    {
+        "id": "UWA2",
+        "zipcode": "98133",
+        "services": ["Prime Now", "Amazon Fresh"],
+        "address": "13537 Aurora Ave N, Seattle, WA, 98133",
+        "vehicles" : {
+            "Compact Sedan" : 4,
+            "Midsize Sedan" : 1,
+            "Midsize SUV" : 2,
+            "Fullsize SUV" : 1
+        }
     }
 ]

@@ -39,17 +39,17 @@ class OrderGenerator:
         Generate a random delivery window within the future range
         """
         now = pd.Timestamp.now()
-        end_time_min = now + pd.Timedelta(hours=min_hour_from_now)
-        end_time_max = (
+        start_time_min = now + pd.Timedelta(hours=min_hour_from_now)
+        start_time_max = (
             now + pd.Timedelta(hours=max_hours_from_now) - pd.Timedelta(hours=2)
         )
         start_timestamps = []
         end_timestamps = []
         for _ in range(self.n_package):
-            start_timestamp = self.rng.integers(end_time_min.value, end_time_max.value)
+            start_timestamp = self.rng.integers(start_time_min.value, start_time_max.value)
             start_timestamp_pd = pd.Timestamp(start_timestamp)
             end_timestamp_pd = start_timestamp_pd + pd.Timedelta(
-                hours=self.rng.integers(1, 2)
+                hours=self.rng.integers(1, 3)
             )  # Random window of 1 or 2 hours
             start_timestamps.append(start_timestamp_pd.value)
             end_timestamps.append(end_timestamp_pd.value)

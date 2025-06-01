@@ -6,15 +6,31 @@ import pandas as pd
 def compute_waiting_times(
     order_data: list[dict], dept_time: pd.Timestamp
 ) -> list[dict]:
-    """Computes maximum order waiting times for each stop."""
+    """Computes the waiting time for each order in Regular delivery services."""
     for order in order_data:
-        order["waiting_time"] = int((dept_time - pd.to_datetime(order["timestamp"])).total_seconds())
+        order["waiting_time"] = int(
+            (dept_time - pd.to_datetime(order["timestamp"])).total_seconds()
+        )
     return order_data
 
 
-def order_info_from_csv(
+def compute_delivery_windows(
+    order_data: list[dict], dept_time: pd.Timestamp
+) -> list[dict]:
+    """Computes the delivery windows for each order in Fresh delivery services."""
+    for order in order_data:
+        order["delivery_window_start_rel"] = int(
+            (pd.to_datetime(order["delivery_window_start"]) - dept_time).total_seconds()
+        )
+        order["delivery_window_end_rel"] = int(
+            (pd.to_datetime(order["delivery_window_end"]) - dept_time).total_seconds()
+        )
+    return order_data
+
+
+def regular_order_info_from_csv(
     order_csv: str, packaging_info_tsv: str
-) -> tuple[list[dict], dict[str, list[str]]]:
+) -> tuple[list[dict], dict[str, list]]:
     """Extracts order information from orders CSV file."""
     df = pd.read_csv(order_csv, index_col=0)
     order_data = []
@@ -44,6 +60,41 @@ def order_info_from_csv(
                 "package_weight": row["packaging_weight"],
                 "package_volume": package_volume,
                 "package_dimension": package_dimension,
+                "address_index": address_index,
+            }
+        )
+    return order_data, address_data
+
+
+def fresh_order_info_from_csv(order_csv: str) -> tuple[list[dict], dict[str, list]]:
+    """Extracts fresh order information from orders CSV file."""
+    df = pd.read_csv(order_csv, index_col=0)
+    order_data = []
+    address_data = {
+        "ids": [],
+        "addresses": [],
+        "max_num_packages": [],
+    }
+    for i, row in df.iterrows():
+        try:
+            address_index = address_data["ids"].index(row["customer_id"])
+            address_data["max_num_packages"][address_index] += 1
+        except ValueError:
+            address_data["ids"].append(row["customer_id"])
+            address_index = len(address_data["ids"]) - 1
+            address_data["addresses"].append(row["address"])
+            address_data["max_num_packages"].append(1)
+        order_data.append(
+            {
+                "id": i,
+                "address_id": row["customer_id"],
+                "address": row["address"],
+                "timestamp": row["order_timestamp"],
+                "delivery_window_start": row["delivery_window_start"],
+                "delivery_window_end": row["delivery_window_end"],
+                "package_weight": row["packaging_weight"],
+                "package_volume": row["packaging_volume"],
+                "perishable": row["perishable"],
                 "address_index": address_index,
             }
         )
@@ -100,7 +151,7 @@ def fetch_route_matrix(
 
 
 def fetch_vehicle_info(
-    depot_data: dict, vehicle_data_path: str
+    service: str, depot_data: dict, vehicle_data_path: str
 ) -> list[tuple[str, float, float, float]]:
     """Fetches vehicle model, payload, capacity, and cruising range info."""
     with open(vehicle_data_path, "r") as f:
@@ -110,12 +161,13 @@ def fetch_vehicle_info(
         raise ValueError("No vehicles available in depot data.")
     vehicles = []
     for k, v in available_vehicles.items():
-        if k in all_vehicles["Regular"]:
-            weight_cap = all_vehicles["Regular"][k]["Weight_capacity"]
-            volume_cap = all_vehicles["Regular"][k]["Volume_capacity"]
-            cruising_dist = all_vehicles["Regular"][k]["Max_distance"]
+        if k in all_vehicles[service]:
+            weight_cap = all_vehicles[service][k]["Weight_capacity"]
+            volume_cap = all_vehicles[service][k]["Volume_capacity"]
+            cruising_dist = all_vehicles[service][k]["Max_distance"]
             vehicles.extend([(k, weight_cap, volume_cap, cruising_dist)] * v)
     return vehicles
+
 
 def calculate_stopover_times(
     stop_info: dict,
@@ -128,23 +180,33 @@ def calculate_stopover_times(
     """
     BASE_TIMES = {
         "RESIDENTIAL": {
-            "C": 240,   # Residential + City: 4 minutes
-            "R": 360,   # Residential + Rural: 6 minutes
-            "H": 480,   # Residential + High-rise: 8 minutes
+            "C": 240,  # Residential + City: 4 minutes
+            "R": 360,  # Residential + Rural: 6 minutes
+            "H": 480,  # Residential + High-rise: 8 minutes
+            "U": 480,  # Residential + Unknown: 8 minutes
         },
         "BUSINESS": {
-            "C": 180,   # Business + City: 3 minutes
-            "R": 300,   # Business + Rural: 5 minutes
-            "H": 600,   # Business + High-rise: 10 minutes
-        }
+            "C": 180,  # Business + City: 3 minutes
+            "R": 300,  # Business + Rural: 5 minutes
+            "H": 600,  # Business + High-rise: 10 minutes
+            "U": 600,  # Business + Unknown: 10 minutes
+        },
+        "UNKNOWN": {
+            "C": 300,  # Unknown + City: 5 minutes
+            "R": 420,  # Unknown + Rural: 7 minutes
+            "H": 600,  # Unknown + High-rise: 10 minutes
+            "U": 600,  # Unknown + Unknown: 10 minutes
+        },
     }
 
     PER_PACKAGE_TIME = {
+        "UNKNOWN": 70,  # 70 seconds for unknown
         "RESIDENTIAL": 60,  # 60 seconds for residential
-        "BUSINESS": 50,     # 50 seconds for business
+        "BUSINESS": 50,  # 50 seconds for business
     }
 
     from amznoptim.utils.gmaps_service import AddressValidation
+
     validation_service = AddressValidation(api_key=api_key)
     validation_responses = []
     processed_info = []
@@ -155,14 +217,11 @@ def calculate_stopover_times(
     for idx, address in enumerate(stop_info["addresses"]):
         validation_service.set_address(address)
         if not validation_json:
-            response = validation_service.get_address_validation(
-                UspsCass=True)
+            response = validation_service.get_address_validation(UspsCass=True)
             validation_responses.append(response)
         else:
             response = validation_responses[idx]
-        processed_info.append(
-            validation_service.process_address_validation(response)
-        )
+        processed_info.append(validation_service.process_address_validation(response))
 
     if save_path:
         with open(save_path, "w") as f:
@@ -175,9 +234,11 @@ def calculate_stopover_times(
             raise ValueError(f"Unknown address type: {address_type}")
         carrier_route = info["usps_carrier_route"]
         if carrier_route is None or carrier_route[0] not in BASE_TIMES[address_type]:
-            carrier_route = ["H"] # Treat as high-rise if no carrier route is available
+            carrier_route = ["U"]  # Default to 'Unknown' if not available
         base_time = BASE_TIMES[address_type][carrier_route[0]]
-        package_time = PER_PACKAGE_TIME[address_type] * stop_info["max_num_packages"][idx]
+        package_time = (
+            PER_PACKAGE_TIME[address_type] * stop_info["max_num_packages"][idx]
+        )
         stopover_times.append(base_time + package_time)
 
     print(stopover_times)

@@ -307,15 +307,18 @@ class AddressValidation:
 
         formatted_address = result["address"]["formattedAddress"]
 
-        is_residential = result["metadata"].get("residential", False)
-        is_business = result["metadata"].get("business", False)
-        address_type = (
-            "RESIDENTIAL"
-            if is_residential
-            else "BUSINESS"
-            if is_business
-            else "UNKNOWN"
-        )
+        if "metadata" not in result:
+            address_type = "UNKNOWN"
+        else:
+            is_residential = result["metadata"].get("residential", False)
+            is_business = result["metadata"].get("business", False)
+            address_type = (
+                "RESIDENTIAL"
+                if is_residential
+                else "BUSINESS"
+                if is_business
+                else "UNKNOWN"
+            )
 
         usps_carrier_route = None
         if "uspsData" in result:

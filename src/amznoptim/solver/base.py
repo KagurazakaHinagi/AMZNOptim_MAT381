@@ -4,10 +4,9 @@ import numpy as np
 import pandas as pd
 
 from amznoptim.utils.preprocess import (
-    compute_waiting_times,
+    calculate_stopover_times,
     fetch_route_matrix,
     fetch_vehicle_info,
-    calculate_stopover_times,
 )
 
 
@@ -21,8 +20,11 @@ class DepotVRPBase:
 
     Attributes:
         depots (list[dict]): List of depot data, each containing depot information.
+        depots_validated (bool): Flag indicating whether depots have been validated.
         orders (list[dict]): List of order data, each containing order information.
         stops (dict[str, list[any]]): Dictionary containing stop id, address, and max package count.
+        service (str): Service type for the VRP, set in the implementation
+            available choices: "Regular", "Prime Now", "Amazon Fresh".
         addresses (list[str]): List of addresses derived from depots and stops.
         weights (list[float]): List of package weights in grams for each order.
         volumes (list[float]): List of package volumes in cubic milimeter for each order.
@@ -60,12 +62,17 @@ class DepotVRPBase:
                 and max package count.
         """
         self.depots = depot_data
+        self.depots_validated = False
         self.orders = order_data
         self.stops = address_data
+        self.service = (
+            ""  # Service type for the VRP, implementation should set this value
+        )
         self.addresses = []
         self.weights = []
         self.volumes = []
-        self.order_waiting_times = []
+        self.order_waiting_times = []  # Use for Regular orders
+        self.perishable_costs = []  # Use for Amazon Fresh orders
         self.route_durations = np.array([[]])
         self.route_distances = np.array([[]])
         self.vehicles = []
@@ -141,6 +148,7 @@ class DepotVRPBase:
         For input data format, refer to the documentation at
         https://github.com/KagurazakaHinagi/AMZNOptim_MAT381/blob/main/docs/input.md
         """
+        self.process_depot_data()
         self.process_order_data(dept_time)
         self.process_vehicle_data(vehicle_data_path)
         self.process_route_data(
@@ -150,6 +158,23 @@ class DepotVRPBase:
             api_key=api_key,
             save_path=matrix_save_path,
         )
+
+    def process_depot_data(self):
+        """
+        Process the depot data to validate and prepare depot information.
+        This method should be called before processing order and vehicle data.
+        """
+        valid_depots = []
+        for depot in self.depots:
+            if self.service in depot["services"]:
+                valid_depots.append(depot)
+        if not valid_depots:
+            raise ValueError(
+                f"No depots available for the service '{self.service}'. "
+                "Please check the depot data."
+            )
+        self.depots = valid_depots
+        self.depots_validated = True
 
     def process_order_data(self, dept_time: pd.Timestamp | None = None):
         """
@@ -161,13 +186,11 @@ class DepotVRPBase:
                 If None, the current time will be used.
         """
         self.dept_time = dept_time or pd.Timestamp.now()
-        order_data = compute_waiting_times(self.orders, dept_time=self.dept_time)
         self.addresses = [depot["address"] for depot in self.depots] + self.stops[
             "addresses"
         ]
-        self.weights = [order["package_weight"] for order in order_data]
-        self.volumes = [order["package_volume"] for order in order_data]
-        self.order_waiting_times = [order["waiting_time"] for order in order_data]
+        self.weights = [order["package_weight"] for order in self.orders]
+        self.volumes = [order["package_volume"] for order in self.orders]
         if not self.stopping_time:
             self.stopping_time = [0] * len(self.addresses)
 
@@ -184,7 +207,7 @@ class DepotVRPBase:
         self.vehicles_per_depot = []
         vehicle_idx = 0
         for depot_idx, depot in enumerate(self.depots):
-            depot_vehicles = fetch_vehicle_info(depot, vehicle_data_path)
+            depot_vehicles = fetch_vehicle_info(self.service, depot, vehicle_data_path)
             self.vehicles_per_depot.append(depot_vehicles)
 
             for _ in depot_vehicles:
@@ -263,6 +286,10 @@ class DepotVRPBase:
             raise ValueError(
                 "The number of addresses does not match the number of route durations."
             )
+        if self.depots_validated is False:
+            raise ValueError(
+                "Depots have not been validated. Please process depot data first."
+            )
 
     def solve(self):
         """
@@ -284,12 +311,12 @@ class DepotVRPBase:
             list[dict]: A list of depot plans, each containing vehicle assignments
                 and stop details.
         """
-        plans = []
+        num_depots = len(self.depots)
+        plans = [{"service": self.service, "dept_time": self.dept_time.isoformat()}]
         for depot_idx, depot in enumerate(self.depots):
             depot_plan = {
                 "depot": depot["id"],
                 "depot_address": depot["address"],
-                "departure_time": self.dept_time.isoformat(),
             }
             depot_plan["assignments"] = {}
             for k, route in enumerate(solution["routes"]):
@@ -326,7 +353,7 @@ class DepotVRPBase:
                     package_info = [
                         self.orders[o]["id"]
                         for o in packages
-                        if self.orders[o]["address_index"] + 1 == stop_index
+                        if self.orders[o]["address_index"] + num_depots == stop_index
                     ]
                     stop_info = {
                         "address": stop_address,
@@ -352,6 +379,31 @@ class DepotVRPBase:
                         )
                         + " min",
                     }
+
+                    if self.service != "Regular":
+                        minutes_before_deadline = []
+                        for o in packages:
+                            if (
+                                self.orders[o]["address_index"] + num_depots
+                                == stop_index
+                            ):
+                                minutes_before_deadline.append(
+                                    round(solution["minutes_before_deadline"][o])
+                                )
+                        stop_info["minutes_before_deadline"] = minutes_before_deadline
+
+                    if self.service == "Amazon Fresh":
+                        contain_perishable = False
+                        for o in packages:
+                            if (
+                                self.orders[o]["address_index"] + num_depots
+                                == stop_index
+                            ):
+                                if self.orders[o]["perishable"]:
+                                    contain_perishable = True
+                                    break
+                        stop_info["contain_perishable"] = contain_perishable
+
                     vehicle_info["stops"][f"stop_{j}"] = stop_info
                     vehicle_info["total_time"] += (
                         self.route_durations[route[j]][route[j + 1]]
