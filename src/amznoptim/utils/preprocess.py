@@ -1,4 +1,5 @@
 import json
+import os
 
 import pandas as pd
 
@@ -29,9 +30,9 @@ def compute_delivery_windows(
 
 
 def regular_order_info_from_csv(
-    order_csv: str, packaging_info_tsv: str
+    order_csv: str | os.PathLike, packaging_info_tsv: str | os.PathLike
 ) -> tuple[list[dict], dict[str, list]]:
-    """Extracts order information from orders CSV file."""
+    """Extracts Regular order information from orders CSV file."""
     df = pd.read_csv(order_csv, index_col=0)
     order_data = []
     address_data = {
@@ -66,8 +67,10 @@ def regular_order_info_from_csv(
     return order_data, address_data
 
 
-def fresh_order_info_from_csv(order_csv: str) -> tuple[list[dict], dict[str, list]]:
-    """Extracts fresh order information from orders CSV file."""
+def sameday_order_info_from_csv(
+    order_csv: str | os.PathLike, packaging_info_tsv: str | os.PathLike | None = None
+) -> tuple[list[dict], dict[str, list]]:
+    """Extracts Fresh / Prime Now order information from orders CSV file."""
     df = pd.read_csv(order_csv, index_col=0)
     order_data = []
     address_data = {
@@ -76,6 +79,17 @@ def fresh_order_info_from_csv(order_csv: str) -> tuple[list[dict], dict[str, lis
         "max_num_packages": [],
     }
     for i, row in df.iterrows():
+        if "packaging_type" in row:  # For Prime Now delivery services
+            if packaging_info_tsv:
+                package_volume, package_dimension = fetch_packaging_info(
+                    row["packaging_type"], packaging_info_tsv=packaging_info_tsv
+                )
+                row["packaging_volume"] = package_volume
+                row["packaging_dimension"] = package_dimension
+            else:
+                raise ValueError(
+                    "Packaging type is provided but packaging info TSV is not specified."
+                )
         try:
             address_index = address_data["ids"].index(row["customer_id"])
             address_data["max_num_packages"][address_index] += 1
@@ -94,22 +108,24 @@ def fresh_order_info_from_csv(order_csv: str) -> tuple[list[dict], dict[str, lis
                 "delivery_window_end": row["delivery_window_end"],
                 "package_weight": row["packaging_weight"],
                 "package_volume": row["packaging_volume"],
-                "perishable": row["perishable"],
                 "address_index": address_index,
             }
         )
+        if "perishable" in row:  # For Fresh delivery services
+            order_data[-1]["perishable"] = row["perishable"]
+
     return order_data, address_data
 
 
-def fetch_packaging_info(packaging_type: str, packaging_info_tsv: str):
+def fetch_packaging_info(packaging_type: str | os.PathLike, packaging_info_tsv: str | os.PathLike) -> tuple[int, tuple[int, int, int]]:
     """Fetches packaging information from the TSV file."""
     df = pd.read_csv(packaging_info_tsv, sep="\t")
     length = df.loc[df["Code"] == packaging_type, "Length(in)"].values[0]
-    length = int(length * 254)  # Convert inches to mm
+    length = int(length * 25.4)  # Convert inches to mm
     width = df.loc[df["Code"] == packaging_type, "Width(in)"].values[0]
-    width = int(width * 254)  # Convert inches to mm
+    width = int(width * 25.4)  # Convert inches to mm
     height = df.loc[df["Code"] == packaging_type, "Height(in)"].values[0]
-    height = int(height * 254)  # Convert inches to mm
+    height = int(height * 25.4)  # Convert inches to mm
     volume = length * width * height
     return (volume, (length, width, height))
 
@@ -119,9 +135,9 @@ def fetch_route_matrix(
     stop_addresses: list[str],
     traffic_aware: bool = False,
     dept_time: pd.Timestamp | None = None,
-    matrix_json: str | None = None,
-    save_path: str | None = None,
-    api_key=None,
+    matrix_json: str | os.PathLike | None = None,
+    save_path: str | os.PathLike | None = None,
+    api_key: str | None = None,
 ) -> tuple[dict, int]:
     """Fetches the route matrix for the stops using Google Maps API."""
     from amznoptim.utils.gmaps_service import RouteMatrix
@@ -171,9 +187,9 @@ def fetch_vehicle_info(
 
 def calculate_stopover_times(
     stop_info: dict,
-    validation_json: str | None = None,
-    save_path: str | None = None,
-    api_key=None,
+    validation_json: str | os.PathLike | None = None,
+    save_path: str | os.PathLike | None = None,
+    api_key: str | None = None,
 ):
     """
     Calculates stopover times for each stop using Google Maps Address Validation API.
