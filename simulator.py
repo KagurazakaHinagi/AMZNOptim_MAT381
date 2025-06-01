@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from functools import partial
 
@@ -17,9 +18,8 @@ class OrderGenerator:
         self.rng = np.random.default_rng()
         self.address_sampler = RandomAddressSampler(n_address)
         self.package_generator = RandomPackageGenerator(n_package)
-        self.max_hours_from_now = 24
 
-    def random_datetime(self, hours_from_now):
+    def random_datetime(self, hours_from_now: int | float):
         """
         Generate a random datetime within the past range_from_today days.
         """
@@ -32,42 +32,36 @@ class OrderGenerator:
             timestamps_formatted.append(pd.Timestamp(timestamps[-1]))
         return timestamps, timestamps_formatted
 
-    def generate(self):
+    def random_delivery_window(
+        self, max_hours_from_now: int | float, min_hour_from_now: int | float
+    ):
+        """
+        Generate a random delivery window within the future range
+        """
+        now = pd.Timestamp.now()
+        end_time_min = now + pd.Timedelta(hours=min_hour_from_now)
+        end_time_max = (
+            now + pd.Timedelta(hours=max_hours_from_now) - pd.Timedelta(hours=2)
+        )
+        start_timestamps = []
+        end_timestamps = []
+        for _ in range(self.n_package):
+            start_time = self.rng.integers(end_time_min.value, end_time_max.value)
+            start_timestamp = pd.Timestamp(start_time)
+            end_timestamp = start_timestamp + pd.Timedelta(
+                hours=self.rng.integers(1, 2)
+            )  # Random window of 1 or 2 hours
+            start_timestamps.append(start_timestamp)
+            end_timestamps.append(end_timestamp)
+        return start_timestamps, end_timestamps
+
+    def generate(self, *args, **kwargs):
         """
         Generate random orders.
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def _generate(self, max_hours_from_now=None, save_path=None, **kwargs):
-        """
-        Generate random orders. (Helper function)
-        """
-        packages = self.package_generator.generate(
-            save_path=save_path, dimension_tsv=kwargs.get("dimension_tsv")
-        )
-        addresses = self.address_sampler.sample(
-            save_path=save_path, address_list_file=kwargs.get("address_list_file")
-        )
-        if len(packages) > len(addresses):
-            addresses = addresses.sample(
-                n=len(packages), replace=True, random_state=self.rng
-            ).reset_index(drop=True)
-        elif len(packages) < len(addresses):
-            raise ValueError(
-                "Number of packages is less than number of addresses."
-            )
-
-        max_hours_from_now = max_hours_from_now or self.max_hours_from_now
-        orders = pd.DataFrame()
-        orders["order_id"] = [uuid.uuid4() for _ in range(len(packages))]
-        orders["order_timestamp"], _ = self.random_datetime(
-            max_hours_from_now
-        )
-        orders = pd.concat([orders, addresses, packages], axis=1)
-        orders.set_index("order_id", inplace=True)
-        return orders
-
-    def _save(self, orders, output_file):
+    def save(self, orders: pd.DataFrame, output_file: str | os.PathLike):
         """
         Save the sampled orders to a file.
         """
@@ -84,39 +78,154 @@ class RegularOrderGenerator(OrderGenerator):
         super().__init__(n_address, n_package)
         self.max_hours_from_now = 120
 
-    def generate(self, max_hours_from_now=None, save_path=None, **kwargs):
+    def generate(
+        self,
+        dimension_tsv: str | os.PathLike,
+        address_list_file: str | os.PathLike,
+        max_hours_from_now: int | float | None = None,
+        save_path: str | os.PathLike | None = None,
+    ) -> pd.DataFrame:
         """
         Generate random orders.
         """
-        orders = self._generate(max_hours_from_now, save_path, **kwargs)
+        packages = self.package_generator.generate_boxed(dimension_tsv=dimension_tsv)
+        addresses = self.address_sampler.sample(address_list_file=address_list_file)
+        if len(packages) > len(addresses):
+            addresses = addresses.sample(
+                n=len(packages), replace=True, random_state=self.rng
+            ).reset_index(drop=True)
+        elif len(packages) < len(addresses):
+            raise ValueError("Number of packages is less than number of addresses.")
+
+        max_hours_from_now = max_hours_from_now or self.max_hours_from_now
+        orders = pd.DataFrame()
+        orders["order_id"] = [uuid.uuid4() for _ in range(len(packages))]
+        orders["order_timestamp"], _ = self.random_datetime(max_hours_from_now)
+        orders = pd.concat([orders, addresses, packages], axis=1)
+        orders.set_index("order_id", inplace=True)
+
         if save_path:
-            self._save(orders, save_path)
+            self.save(orders, save_path)
+
         return orders
-
-
-class SameDayOrderGenerator(OrderGenerator):
-    def __init__(self, n_address: int, n_package: int):
-        super().__init__(n_address, n_package)
-
-    # TODO: Implement same day order generation
 
 
 class FreshOrderGenerator(OrderGenerator):
     def __init__(self, n_address: int, n_package: int):
         super().__init__(n_address, n_package)
+        self.max_hours_from_now = 48
+        self.max_window_hours_from_now = 6
+        self.min_window_hours_from_now = 1
 
-    # TODO: Implement fresh order generation
+    def generate(
+        self,
+        address_list_file: str | os.PathLike,
+        max_hours_from_now: int | float | None = None,
+        max_window_hours_from_now: int | float | None = None,
+        min_window_hours_from_now: int | float | None = None,
+        save_path: str | os.PathLike | None = None,
+    ) -> pd.DataFrame:
+        """
+        Generate random fresh orders.
+        """
+        packages = self.package_generator.generate_unboxed()
+        addresses = self.address_sampler.sample(address_list_file=address_list_file)
+        if len(packages) > len(addresses):
+            addresses = addresses.sample(
+                n=len(packages), replace=True, random_state=self.rng
+            ).reset_index(drop=True)
+        elif len(packages) < len(addresses):
+            raise ValueError("Number of packages is less than number of addresses.")
+
+        max_hours_from_now = max_hours_from_now or self.max_hours_from_now
+        max_window_hours_from_now = (
+            max_window_hours_from_now or self.max_window_hours_from_now
+        )
+        min_window_hours_from_now = (
+            min_window_hours_from_now or self.min_window_hours_from_now
+        )
+
+        orders = pd.DataFrame()
+        orders["order_id"] = [uuid.uuid4() for _ in range(len(packages))]
+        orders["order_timestamp"], _ = self.random_datetime(max_hours_from_now)
+        orders["delivery_window_start"], orders["delivery_window_end"] = (
+            self.random_delivery_window(
+                max_window_hours_from_now, min_window_hours_from_now
+            )
+        )
+
+        orders = pd.concat([orders, addresses, packages], axis=1)
+        orders.set_index("order_id", inplace=True)
+
+        if save_path:
+            self.save(orders, save_path)
+
+        return orders
+
+
+class PrimeNowOrderGenerator(OrderGenerator):
+    def __init__(self, n_address: int, n_package: int):
+        super().__init__(n_address, n_package)
+        self.max_hours_from_now = 48
+        self.max_window_hours_from_now = 6
+        self.min_window_hours_from_now = 1
+
+    def generate(
+        self,
+        dimension_tsv: str | os.PathLike,
+        address_list_file: str | os.PathLike,
+        max_hours_from_now: int | float | None = None,
+        max_window_hours_from_now: int | float | None = None,
+        min_window_hours_from_now: int | float | None = None,
+        save_path: str | os.PathLike | None = None,
+    ) -> pd.DataFrame:
+        """
+        Generate random fresh orders.
+        """
+        packages = self.package_generator.generate_boxed(dimension_tsv=dimension_tsv)
+        addresses = self.address_sampler.sample(address_list_file=address_list_file)
+        if len(packages) > len(addresses):
+            addresses = addresses.sample(
+                n=len(packages), replace=True, random_state=self.rng
+            ).reset_index(drop=True)
+        elif len(packages) < len(addresses):
+            raise ValueError("Number of packages is less than number of addresses.")
+
+        max_hours_from_now = max_hours_from_now or self.max_hours_from_now
+        max_window_hours_from_now = (
+            max_window_hours_from_now or self.max_window_hours_from_now
+        )
+        min_window_hours_from_now = (
+            min_window_hours_from_now or self.min_window_hours_from_now
+        )
+
+        orders = pd.DataFrame()
+        orders["order_id"] = [uuid.uuid4() for _ in range(len(packages))]
+        orders["order_timestamp"], _ = self.random_datetime(max_hours_from_now)
+        orders["delivery_window_start"], orders["delivery_window_end"] = (
+            self.random_delivery_window(
+                max_window_hours_from_now, min_window_hours_from_now
+            )
+        )
+
+        orders = pd.concat([orders, addresses, packages], axis=1)
+        orders.set_index("order_id", inplace=True)
+
+        if save_path:
+            self.save(orders, save_path)
+
+        return orders
 
 
 class RandomAddressSampler:
     """
-    Class to sample addresses from a list of addresses in a file.
+    Class to sample addresses from a list of Washington addresses in a file.
     """
 
-    def __init__(self, n):
+    def __init__(self, n: int):
         self.n = n
 
-    def sample(self, address_list_file, save_path=None) -> pd.DataFrame:
+    def sample(self, address_list_file: str | os.PathLike) -> pd.DataFrame:
         """
         Sample n addresses from a list of addresses in a file.
         """
@@ -130,11 +239,10 @@ class RandomAddressSampler:
                     if j < self.n:
                         reservoir[j] = line
         addresses = self.format_addresses(reservoir)
-        if save_path:
-            self._save(addresses, save_path)
+
         return addresses
 
-    def format_addresses(self, addresses):
+    def format_addresses(self, addresses: list) -> pd.DataFrame:
         """
         Format addresses into a DataFrame.
         """
@@ -164,12 +272,6 @@ class RandomAddressSampler:
             )
         return formatted_addresses
 
-    def _save(self, addresses, output_file):
-        """
-        Save the sampled addresses to a file.
-        """
-        addresses.to_csv(output_file, index=False)
-
 
 class RandomPackageGenerator:
     """
@@ -179,26 +281,52 @@ class RandomPackageGenerator:
     def __init__(self, n: int):
         self.n = n
         self.rng = np.random.default_rng()
-        self.sampling_dist = partial(self.rng.lognormal, mean=np.log(2), sigma=1)
+        self.sampling_dist_boxed = partial(self.rng.lognormal, mean=np.log(2), sigma=1)
+        self.sampling_dist_unboxed_weight = partial(
+            self.rng.lognormal, mean=3.44, sigma=0.65
+        )
+        self.sampling_dist_unboxed_volume = partial(
+            self.rng.lognormal, mean=1.14, sigma=0.65
+        )
 
-    def generate(
-        self, dimension_tsv, sampling_dist=None, save_path=None
+    def generate_boxed(
+        self, dimension_tsv: str | os.PathLike, sampling_dist: partial | None = None
     ) -> pd.DataFrame:
         """
         Generate random package information, simulate given distribution.
         """
-        sampling_dist = sampling_dist or self.sampling_dist
-        weights = sampling_dist(size=self.n) * 454 # Convert lbs to g
+        sampling_dist = sampling_dist or self.sampling_dist_boxed
+        weights = sampling_dist(size=self.n) * 454  # Convert lbs to g
         avail_package_types = pd.read_csv(dimension_tsv, sep="\t", usecols=[0])
-        packages = avail_package_types.sample(self.n, replace=True).reset_index(drop=True)
+        packages = avail_package_types.sample(self.n, replace=True).reset_index(
+            drop=True
+        )
         packages["packaging_weight"] = [int(weight) for weight in weights]
         packages.columns.values[0] = "packaging_type"
-        if save_path:
-            self._save(packages, save_path)
+
         return packages
 
-    def _save(self, packages, output_file):
+    def generate_unboxed(
+        self,
+        weight_sampling_dist: partial | None = None,
+        volume_sampling_dist: partial | None = None,
+    ) -> pd.DataFrame:
         """
-        Save the sampled addresses to a file.
+        Generate random package information for grocery orders, simulate given distribution.
         """
-        packages.to_csv(output_file, index=False)
+        weight_sampling_dist = weight_sampling_dist or self.sampling_dist_unboxed_weight
+        volume_sampling_dist = volume_sampling_dist or self.sampling_dist_unboxed_volume
+        weights = weight_sampling_dist(size=self.n) * 454  # Convert lbs to g
+        volumes = (
+            volume_sampling_dist(size=self.n) * 2.832e7
+        )  # Convert cubic inches to cubic mm
+        perishable = self.rng.integers(0, 2, size=self.n)
+        packages = pd.DataFrame(
+            {
+                "packaging_weight": [int(weight) for weight in weights],
+                "packaging_volume": [int(volume) for volume in volumes],
+                "perishable": [int(p) for p in perishable],
+            }
+        )
+
+        return packages
