@@ -1,5 +1,3 @@
-import json
-
 from ortools.sat.python import cp_model
 
 from amznoptim.solver.base import DepotVRPBase
@@ -27,27 +25,6 @@ class DepotVRPCpBase(DepotVRPBase):
         best solution found so far.
         """
         self.solver.parameters.max_time_in_seconds = max_time
-
-
-class DepotVRPCpRegular(DepotVRPCpBase):
-    """
-    Vehicle Routing Problem (VRP) solver for Amazon regular delivery services
-    using Google OR-Tools CP-SAT solver.
-    """
-
-    def __init__(
-        self,
-        depot_data: list[dict],
-        order_data: list[dict],
-        address_data: dict[str, list[str]],
-    ):
-        """
-        Initialize the DepotVRPCpRegular with depot, order, and address data.
-        """
-        super().__init__(depot_data, order_data, address_data)
-        self.max_duty_time = (
-            28800  # Maximum delivery time for each vehicle (default: 8 hours)
-        )
 
     def solve(self):
         """
@@ -284,3 +261,25 @@ class DepotVRPCpRegular(DepotVRPCpBase):
                 "solver": "CpSAT",
             }
         raise ValueError("No feasible solution found.")
+
+
+class DepotVRPCpRegular(DepotVRPCpBase):
+    """
+    Vehicle Routing Problem (VRP) solver for Amazon regular delivery services
+    using Google OR-Tools CP-SAT solver.
+    """
+
+    def __init__(
+        self,
+        depot_data: list[dict],
+        order_data: list[dict],
+        address_data: dict[str, list[str]],
+    ):
+        """
+        Initialize the DepotVRPCpRegular with depot, order, and address data.
+        """
+        super().__init__(depot_data, order_data, address_data)
+        self.service = "Regular"
+        self.max_duty_time = (
+            28800  # Maximum delivery time for each vehicle (default: 8 hours)
+        )
