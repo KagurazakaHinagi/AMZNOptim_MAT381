@@ -88,7 +88,6 @@ WIP
 ```math
 \begin{aligned}
     \text{minimize} &\space \sum_{k=1}^{K}\sum_{i=0}^{N+M-1}\sum_{j=0}^{N+M-1} t_{i, j}x_{i, j, k}
-                        +\sum_{k=1}^K\sum_{j=M}^{N+M-1} \hat{t}_{j} y_{j, k}
                         -\alpha \sum_{k=1}^K\sum_{o=1}^{O} P_oy_{o, k}
                         +\beta \sum_{k=1}^K z_k & \cr
     \text{s.t.}     &\space \sum_{j=M}^{N+M-1} x_{d(k), j, k} = z_k
