@@ -46,13 +46,13 @@ class OrderGenerator:
         start_timestamps = []
         end_timestamps = []
         for _ in range(self.n_package):
-            start_time = self.rng.integers(end_time_min.value, end_time_max.value)
-            start_timestamp = pd.Timestamp(start_time)
-            end_timestamp = start_timestamp + pd.Timedelta(
+            start_timestamp = self.rng.integers(end_time_min.value, end_time_max.value)
+            start_timestamp_pd = pd.Timestamp(start_timestamp)
+            end_timestamp_pd = start_timestamp_pd + pd.Timedelta(
                 hours=self.rng.integers(1, 2)
             )  # Random window of 1 or 2 hours
-            start_timestamps.append(start_timestamp)
-            end_timestamps.append(end_timestamp)
+            start_timestamps.append(start_timestamp_pd.value)
+            end_timestamps.append(end_timestamp_pd.value)
         return start_timestamps, end_timestamps
 
     def generate(self, *args, **kwargs):
