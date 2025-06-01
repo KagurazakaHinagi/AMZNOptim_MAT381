@@ -93,8 +93,9 @@ class DepotVRPCpRegular(DepotVRPCpBase):
             for other_depot in range(num_depots):
                 if other_depot != depot_idx:
                     for j in range(num_nodes):
-                        self.model.Add(x[other_depot, j, k] == 0)
-                        self.model.Add(x[j, other_depot, k] == 0)
+                        if j != other_depot:
+                            self.model.Add(x[other_depot, j, k] == 0)
+                            self.model.Add(x[j, other_depot, k] == 0)
 
         # Constraint 2: Package Assignment and Routing
         for k in range(len(self.vehicles)):
@@ -222,8 +223,8 @@ class DepotVRPCpRegular(DepotVRPCpBase):
 
             for k in range(len(self.vehicles)):
                 depot_idx = self.depot_vehicle_mapping[k]
-                route = [0]
-                curr = 0
+                route = [depot_idx]
+                curr = depot_idx
                 while True:
                     nxt = next(
                         (
@@ -256,7 +257,7 @@ class DepotVRPCpRegular(DepotVRPCpBase):
             total_stopover_time = 0
             for k in range(len(self.vehicles)):
                 for o in range(num_packages):
-                    stop_index = self.orders[o]["address_index"] + 1
+                    stop_index = self.orders[o]["address_index"] + num_depots
                     if self.solver.Value(y[o, k]) and stop_index < len(
                         self.stopping_time
                     ):

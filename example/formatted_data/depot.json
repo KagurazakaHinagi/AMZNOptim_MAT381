@@ -6,8 +6,19 @@
         "address": "2871 S 102nd St, Tukwila, WA, 98168",
         "vehicles" : {
             "Rivian 500" : 2,
-            "Rivian 700" : 1,
             "Compact Sedan" : 5
+        }
+    },
+    {
+        "id": "DWS4",
+        "zipcode": "98203",
+        "services": ["Regular", "Prime Now"],
+        "address": "315 Shuksan Way, Everett, WA, 98203",
+        "vehicles" : {
+            "Rivian 500" : 3,
+            "Rivian 700" : 2,
+            "Compact Sedan" : 4,
+            "Midsize Sedan" : 2
         }
     }
 ]

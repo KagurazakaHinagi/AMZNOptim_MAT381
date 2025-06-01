@@ -9,6 +9,9 @@ class DepotVRPGurobiBase(DepotVRPBase):
     """
     Base class for Depot Vehicle Routing Problem (VRP) solver using
     Gurobi MIP (Mixed Integer Programming) solver.
+
+    This solver may require a Gurobi license to run.
+    See https://www.gurobi.com/features/web-license-service/ for WLS licensing details.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,6 +27,7 @@ class DepotVRPGurobiBase(DepotVRPBase):
             if line.strip() and not line.startswith("#"):
                 key, value = line.split("=", 1)
                 license_info[key.strip()] = value.strip()
+        license_info["LICENSEID"] = int(license_info["LICENSEID"])
         env = gp.Env(params=license_info)
         self.model = gp.Model("DepotVRP", env=env)
 
@@ -93,8 +97,9 @@ class DepotVRPGurobiRegular(DepotVRPGurobiBase):
             for other_depot in range(num_depots):
                 if other_depot != depot_idx:
                     for j in range(num_nodes):
-                        self.model.addConstr(x[other_depot, j, k] == 0, name=f"no_depot_travel_{other_depot}_{j}_{k}")
-                        self.model.addConstr(x[j, other_depot, k] == 0, name=f"no_depot_travel_{j}_{other_depot}_{k}")
+                        if j != other_depot:
+                            self.model.addConstr(x[other_depot, j, k] == 0, name=f"no_depot_travel_{other_depot}_{j}_{k}")
+                            self.model.addConstr(x[j, other_depot, k] == 0, name=f"no_depot_travel_{j}_{other_depot}_{k}")
 
         # Constraint 2: Package Assignment and Routing
         for k in range(len(self.vehicles)):
