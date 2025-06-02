@@ -50,72 +50,100 @@ To run this project, you need to have your own Google Maps Platform account that
 
 You can acquire an account with monthly free trials at [here](https://developers.google.com/maps).
 
-### Data Preparation
+### Data Preparation and Intepretation
 
-WIP
+Please refer to [docs](docs).
 
-## Constraint Programming Spec
+## Mixed-Integer Programming Spec
 
-### Depot VRP for Amazon Regular Orders
+#### Sets and Indices
+
+- $D$: set of depots, $|D| = n_d$.
+- $S$: set of customer stops, $|S| = n_s$.
+- $N = D \cup S$: set of all nodes, $|N|=n=n_d+n_s$.
+- $K$: set of vehicles, $|K| = m$.
+- $O$: set of packages/orders, $|O| = p$
 
 #### Decision Variables
 
-- $x_{i, j, k} \in \\{0, 1\\}$: truck $k$ travels directly from stop $i$ to stop $j$.
-- $y_{o, k} \in \\{0, 1\\}$: order $o$ is served by truck $k$.
-- $u_{i, k} \in \\{0, \dots, N+M-1\\}$: "timepoint" when truck $k$ arrives at stop $i$.
-- $z_{k} \in \\{0, 1\\}$: truck $k$ is used.
-- $\text{vis}_{j, k} \in \\{0, 1\\}$: (auxiliary variable) stop $j$ is visited by vehicle $k$.
+- $x_{i, j, k} \in \\{0, 1\\}$: truck $k$ travels directly from node $i$ to node $j$.
+- $y_{o, k} \in \\{0, 1\\}$: order $o$ is served by vehicle $k$.
+- $z_{k} \in \\{0, 1\\}$: vehicle $k$ is used.
+- $u_{i, k} \ge 0$: arrival time at node $i$ by vehicle $k$.
+- $s_{i, k} \in $\\{0, n-1\\}$: visit order of node $i$ by vehicle $k$.
 
 #### Parameters
 
 - $t_{i, j}$: travel time from stop $i$ to stop $j$.
-- $\hat{t}_j$: stopover time at stop $j$.
+- $\hat{t}_j$: stopover/service time at stop $j$.
 - $d_{i, j}$: distance from stop $i$ to stop $j$.
 - $w_o, v_o$: weight and volume of package $o$.
 - $W_k, V_k$: weight and volume capacity of vehicle $k$.
 - $P_o$: priority score for order $o$, calculated by the order waiting time.
-- $D_k$: maximum cruising range of vehicle $k$.
+- $R_k$: maximum cruising range of vehicle $k$.
 - $T$: maximum driver duty time.
-- $K$: total number of available trucks.
-- $N$: total number of distinct addresses in the order list.
-- $M$: total number of depots.
-- $O$: total number of orders in the order.
 - $s(o)$: stop index of order $o$.
 - $d(k)$: depot index assigned to vehicle $k$.
+- **Hyperparameters**:
+  - $\alpha$: penalty weight of priority score.
+  - $\beta$: penalty weight of extra vehicle usage.
 
 #### Objective and constraints
 
 ```math
 \begin{aligned}
-    \text{minimize} &\space \sum_{k=1}^{K}\sum_{i=0}^{N+M-1}\sum_{j=0}^{N+M-1} t_{i, j}x_{i, j, k}
-                        -\alpha \sum_{k=1}^K\sum_{o=1}^{O} P_oy_{o, k}
-                        +\beta \sum_{k=1}^K z_k & \cr
-    \text{s.t.}     &\space \sum_{j=M}^{N+M-1} x_{d(k), j, k} = z_k
-                        =\sum_{i=M}^{N+M-1} x_{i, d(k), k},
-                        \quad \forall k & \text{(1a)} \cr
+    \text{minimize} &\space \sum_{k\in K}\sum_{i\in N}\sum_{j\in N} t_{i, j}x_{i, j, k}
+                        -\alpha \sum_{k\in K}\sum_{o\in O} P_oy_{o, k}
+                        +\beta \sum_{k\in K} z_k & \cr
+    \text{s.t.}     &\space \sum_{j\in S} x_{d(k), j, k}
+                        =\sum_{i \in S} x_{i, d(k), k} = z_k,
+                        \quad \forall k\in K
+                        & \text{(1a)} \cr
                     &\space x_{m,j,k} = x_{i,m,k} = 0,
-                        \quad \forall k, i, j, m \ne d(k) & \text{(1b)} \cr
-                    &\space \sum_{i=0,i\ne s(o)+M-1}^{N+M-1} x_{i, s(o)+M-1,k} \ge y_{o, k},
-                        \quad \forall o, k & \text{(2a)} \cr
-                    &\space \sum_{i=0,i\ne h}^{N+M-1} x_{i, h, k} =\sum_{j=0,j\ne h}^{N+M-1} x_{h, j, k},
-                        \quad \forall k, h\in \{M,\dots,N+M-1\} & \text{(2b)} \cr
-                    &\space \sum_{o=1}^{O} w_o y_{o,k} \le W_k, \space \sum_{o=1}^{O} v_o y_{o,k} \le V_k,
-                        \quad \forall k & \text{(3)} \cr
-                    &\space z_k=\max \{y_{o, k}: o \in \{1, \dots, O\}\},
-                        \quad \forall k & \text{(4)} \cr
-                    &\space u_{i,k}+1 \le u_{j,k} + (N + M) \cdot (1 - x_{i, j, k}),
-                        \quad \forall i, j \in \{M,\dots, N+M-1\},i \ne j,k & \text{(5)} \cr
-                    &\space \sum_{i=0}^{N+M-1} \sum_{j=0, j\ne i}^{N+M-1} t_{i, j}x_{i, j, k}+\sum_{j=M}^{N+M-1} \hat{t}_j
-                        \cdot \text{vis}_{j,k} \le T,
-                        \quad \forall k & \text{(6a)} \cr
-                    &\space \text{vis}_{j,k} \ge y_{o,k},
-                        \quad \forall k,o:s(o)=j-M+1 & \text{(6b)} \cr
-                    &\space \text{vis}_{j,k} \le \sum_{o:s(o)=j-M+1} y_{o,k},
-                        \quad \forall j\in \{M,\dots,N+M-1\},k & \text{(6c)} \cr
-                    &\space \sum_{i=0}^{N+M-1} \sum_{j=0, j\ne i}^{N+M-1} d_{i,j}x_{i,j,k}\le D_k,
-                        \quad \forall k & \text{(7)} \cr
-                    &\space \sum_{k=1}^K y_{o,k}=1,
-                        \quad \forall o & \text{(8)} \cr
+                        \quad \forall k\in K,
+                        \quad \forall i,j \in N, i \ne j,
+                        \quad \forall m\in D \setminus \{d(k)\}
+                        & \text{(1b)} \cr
+                    &\space \sum_{i\in N,i\ne s(o)+n_d} x_{i, s(o)+n_d,k} \ge y_{o, k},
+                        \quad \forall o\in O,
+                        \quad \forall k\in K
+                        & \text{(2a)} \cr
+                    &\space \sum_{i\in N,i\ne h} x_{i, h, k} =\sum_{j\in N,j\ne h} x_{h, j, k},
+                        \quad \forall k\in K,
+                        \quad \forall h\in S
+                        & \text{(2b)} \cr
+                    &\space \sum_{o\in O} w_o y_{o,k} \le W_k,
+                        \space \sum_{o=1}^{O} v_o y_{o,k} \le V_k,
+                        \quad \forall k\in K
+                        & \text{(3)} \cr
+                    &\space z_k=\max \{y_{o, k}: o\in O\},
+                        \quad \forall k\in K
+                        & \text{(4)} \cr
+                    &\space s_{d(k), k} = 0,
+                        \quad \forall k\in K
+                        & \text{(5a)} \cr
+                    &\space s_{i,k} - s_{j,k} + n \cdot x_{i,j,k} \le n - 1,
+                        \quad \forall k\in K,
+                        \quad \forall i,j \in S, i \ne j
+                        & \text{(5b)} \cr
+                    &\space u_{d(k), k} = 0,
+                        \quad \forall k\in K
+                        & \text{(6a)} \cr
+                    &\space u_{j,k} \ge u_{i,k} + \hat{t}(i) + t_{i,j}
+                        - T\cdot (1 - x_{i,j,k}),
+                        \quad \forall k\in K,
+                        \quad \forall i,j \in S, i\ne j
+                        & \text{(6b)} \cr
+                    &\space u_{i,k} \le T,
+                        \quad \forall k\in K,
+                        \quad \forall i\in N
+                        & \text{(6c)} \cr
+                    &\space \sum_{i\in N} \sum_{j\in N, j\ne i}d_{i,j}x_{i,j,k} \le R_k,
+                        \quad \forall k\in K
+                        & \text{(7)} \cr
+                    &\space \sum_{k\in K} y_{o,k} = 1,
+                        \quad \forall o\in O
+                        & \text{(8)}
 \end{aligned}
 ```
 
@@ -133,20 +161,55 @@ WIP
    The vehicle $k$ would be in use if there's any packages assigned to $k$.
 5. Subtour Elimination (Miller-Tucker-Zemlin):\
    Prevent disconnected loops by constraining on the order of the visiting time.\
-   See [Wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Miller%E2%80%93Tucker%E2%80%93Zemlin_formulation).
-6. Time Constraints:\
-   (6a). The total travel time + stopover time does not exceeds the driver duty time $T$.\
-   (6b-6c). A stop $s(o)$ is visited iff some package corresponding to that stop is assigned to the vehicle $k$.
+   See [Wikipedia page](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Miller%E2%80%93Tucker%E2%80%93Zemlin_formulation).\
+   (5a). The visit starts at the depot (order = $0$).\
+   (5b). For each other node, the visit order must be greater or equal to $1$.
+6. Time Progression:\
+   (6a). The depot arrival time is $0 \space \text{s}$ after departure.\
+   (6b). If vehicle $k$ travels directly from node $i$ to node $j$, then the arrival time at node $j$ must be at least the arrival time of node $i$, plus the stopover time at node $i$, plus the travel time from $i$ to $j$.\
+   (6c). The arrival time of each node could not exceed the driver's maximum duty time.
 7. Distance Constraint:\
-   The total traveling distance does not exceed the vehicle's cruising range $D_k$.
+   The total traveling distance could not exceed the vehicle $k$'s cruising range $R_k$.
 8. Package Assignment Constraint:\
    Each package is assigned to exactly one vehicle.
+
+### Depot VRP for Amazon Regular Orders
+
+#### Priority Score $P_o$
+
+For Amazon Regular delivery services, the priority score $P_o$ defined in the objective function is the order $o$'s waiting time, calculated by ($\text{departure time} - \text{order placing time}$) and with units in $\text{ns}$.
 
 ### Depot VRP for Amazon Same-Day Orders
 
 > Same-Day orders including Amazon Fresh, Prime Now
 
-WIP
+Besides regular constraints, the same-day delivery services has a user-specified delivery window (either $1\text{h}$ or $2\text{h}$)
+
+#### Additional Parameters
+
+- $e_o$: Earliest delivery time for order $o$.
+- $l_o$: Latest delivery time for order $o$.
+
+#### Additional Constraints
+
+```math
+\begin{aligned}
+    &\space l_o - T(1 - y_{o, k}) \ge u_{s(o)+n_d,k}
+        \ge e_o - T(1 - y_{o,k}),
+        \quad \forall o\in O,
+        \quad \forall k\in K
+        & \text{(9)}
+\end{aligned}
+```
+
+##### Explanation of constraint
+
+9. Ensure that the vehicle arrives within the delivery window.
+
+#### Priority Score $P_o$
+
+- **Amazon Fresh**: the priority score $P_o$ is defined by a boolean value that indicates whether order $o$ contain perishable items or not.
+- **Prime Now**: the priority score is set to $0$ exclusively. (not in use)
 
 ## References
 

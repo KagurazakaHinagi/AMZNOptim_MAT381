@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "amznoptim"
-version = "0.1.250531-alpha"
+version = "0.1.250601-beta"
 description = "Amazon Local Delivery Optimization with Constraint Programming"
 readme = "README.md"
 authors = [

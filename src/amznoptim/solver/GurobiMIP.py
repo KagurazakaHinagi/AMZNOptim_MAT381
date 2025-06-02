@@ -55,11 +55,11 @@ class DepotVRPGurobiBase(DepotVRPBase):
         num_packages = len(self.orders)
 
         # Decision variables
-        x = {}  # x[i][j][k] = 1 if vehicle k travels from stop i to stop j directly
+        x = {}  # x[i][j][k] = 1 if vehicle k travels from node i to node j directly
         y = {}  # y[o][k] = 1 if vehicle k serves order o
         z = {}  # z[k] = 1 if vehicle k is used
-        u = {}  # u[i][k] = arrival time of stop i at vehicle k
-        s = {}  # s[i][k] = visit order of stop i by vehicle k
+        u = {}  # u[i][k] = arrival time of node i at vehicle k
+        s = {}  # s[i][k] = visit order of node i by vehicle k
 
         # Create decision variables
         for k, (_, weight_cap, volume_cap, cruising_dist) in enumerate(self.vehicles):
@@ -177,7 +177,7 @@ class DepotVRPGurobiBase(DepotVRPBase):
             self.model.addConstr(u[depot_idx, k] == 0, name=f"depot_departure_{k}")
 
             # 6b. Arrival time at j must be greater than or equal to
-            # arrival time at i + travel time + stopover time
+            # arrival time at i + travel time + stopover time.
             for i in range(num_depots, num_nodes):
                 for j in range(num_depots, num_nodes):
                     if i != j:
@@ -193,6 +193,12 @@ class DepotVRPGurobiBase(DepotVRPBase):
                             - self.max_duty_time * (1 - x[i, j, k]),
                             name=f"time_progression_{i}_{j}_{k}",
                         )
+
+            # 6c. Arrival time at depot must be less than or equal to max duty time.
+                self.model.addConstr(
+                    u[i, k] <= self.max_duty_time,
+                    name=f"arrival_time_limit_{i}_{k}",
+                )
 
         # Constraint 7: Vehicle Cruising Distance
         for k, (_, _, _, cruising_dist) in enumerate(self.vehicles):
