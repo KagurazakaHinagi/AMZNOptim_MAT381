@@ -105,8 +105,8 @@ class DepotVRPBase:
     def set_stopping_time(
         self,
         stopping_time: list[int] | int | None = None,
-        validation_json: str | None = None,
-        validation_save_path: str | None = None,
+        address_validation_json: str | None = None,
+        address_validation_save_path: str | None = None,
         api_key=None,
     ):
         """
@@ -122,8 +122,8 @@ class DepotVRPBase:
         else:
             self.stopping_time = [0] * len(self.depots) + calculate_stopover_times(
                 self.stops,
-                validation_json=validation_json,
-                save_path=validation_save_path,
+                address_validation_json=address_validation_json,
+                address_validation_save_path=address_validation_save_path,
                 api_key=api_key,
             )
 
@@ -137,9 +137,9 @@ class DepotVRPBase:
         self,
         vehicle_data_path: str,
         dept_time: pd.Timestamp | None = None,
-        matrix_json: str | None = None,
         traffic_aware: bool = False,
-        matrix_save_path: str | None = None,
+        route_matrix_json: str | None = None,
+        route_matrix_save_path: str | None = None,
         api_key=None,
     ):
         """
@@ -152,11 +152,11 @@ class DepotVRPBase:
         self.process_order_data(dept_time)
         self.process_vehicle_data(vehicle_data_path)
         self.process_route_data(
-            matrix_json=matrix_json,
+            route_matrix_json=route_matrix_json,
             traffic_aware=traffic_aware,
             dept_time=dept_time,
             api_key=api_key,
-            save_path=matrix_save_path,
+            save_path=route_matrix_save_path,
         )
 
     def process_depot_data(self):
@@ -222,7 +222,7 @@ class DepotVRPBase:
 
     def process_route_data(
         self,
-        matrix_json: str | None = None,
+        route_matrix_json: str | None = None,
         traffic_aware: bool = False,
         dept_time: pd.Timestamp | None = None,
         save_path: str | None = None,
@@ -257,7 +257,7 @@ class DepotVRPBase:
             self.addresses[len(self.depots) :],
             traffic_aware,
             dept_time,
-            matrix_json,
+            route_matrix_json,
             save_path,
             api_key=api_key,
         )

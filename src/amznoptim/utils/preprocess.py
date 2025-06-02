@@ -135,7 +135,7 @@ def fetch_route_matrix(
     stop_addresses: list[str],
     traffic_aware: bool = False,
     dept_time: pd.Timestamp | None = None,
-    matrix_json: str | os.PathLike | None = None,
+    route_matrix_json: str | os.PathLike | None = None,
     save_path: str | os.PathLike | None = None,
     api_key: str | None = None,
 ) -> tuple[dict, int]:
@@ -155,10 +155,10 @@ def fetch_route_matrix(
         matrix_service.set_departure_time(
             dept_time=dept_time, routing_pref="TRAFFIC_AWARE_OPTIMAL"
         )
-    if not matrix_json:
+    if not route_matrix_json:
         service_result = matrix_service.get_route()
     else:
-        with open(matrix_json, "r") as f:
+        with open(route_matrix_json, "r") as f:
             service_result = json.load(f)
     if save_path:
         with open(save_path, "w") as f:
@@ -187,8 +187,8 @@ def fetch_vehicle_info(
 
 def calculate_stopover_times(
     stop_info: dict,
-    validation_json: str | os.PathLike | None = None,
-    save_path: str | os.PathLike | None = None,
+    address_validation_json: str | os.PathLike | None = None,
+    address_validation_save_path: str | os.PathLike | None = None,
     api_key: str | None = None,
 ):
     """
@@ -226,21 +226,21 @@ def calculate_stopover_times(
     validation_service = AddressValidation(api_key=api_key)
     validation_responses = []
     processed_info = []
-    if validation_json:
-        with open(validation_json, "r") as f:
+    if address_validation_json:
+        with open(address_validation_json, "r") as f:
             validation_responses = json.load(f)
 
     for idx, address in enumerate(stop_info["addresses"]):
         validation_service.set_address(address)
-        if not validation_json:
+        if not address_validation_json:
             response = validation_service.get_address_validation(UspsCass=True)
             validation_responses.append(response)
         else:
             response = validation_responses[idx]
         processed_info.append(validation_service.process_address_validation(response))
 
-    if save_path:
-        with open(save_path, "w") as f:
+    if address_validation_save_path:
+        with open(address_validation_save_path, "w") as f:
             json.dump(validation_responses, f, indent=4)
 
     stopover_times = []
