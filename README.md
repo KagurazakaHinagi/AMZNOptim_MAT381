@@ -70,7 +70,7 @@ Please refer to [docs](docs).
 - $y_{o, k} \in \\{0, 1\\}$: order $o$ is served by vehicle $k$.
 - $z_{k} \in \\{0, 1\\}$: vehicle $k$ is used.
 - $u_{i, k} \ge 0$: arrival time at node $i$ by vehicle $k$.
-- $s_{i, k} \in $\\{0, n-1\\}$: visit order of node $i$ by vehicle $k$.
+- $s_{i, k} \in \\{0, n-1\\}$: visit order of node $i$ by vehicle $k$.
 
 #### Parameters
 
@@ -181,16 +181,21 @@ For Amazon Regular delivery services, the priority score $P_o$ defined in the ob
 
 ### Depot VRP for Amazon Same-Day Orders
 
-> Same-Day orders including Amazon Fresh, Prime Now
+> Same-Day delivery services includes Amazon Fresh, Prime Now
 
 Besides regular constraints, the same-day delivery services has a user-specified delivery window (either $1\text{h}$ or $2\text{h}$)
+
+#### Priority Score $P_o$
+
+- **Amazon Fresh**: the priority score $P_o$ is defined by a boolean value that indicates whether order $o$ contain perishable items or not.
+- **Prime Now**: the priority score is set to $0$ exclusively. (not in use)
 
 #### Additional Parameters
 
 - $e_o$: Earliest delivery time for order $o$.
 - $l_o$: Latest delivery time for order $o$.
 
-#### Additional Constraints
+#### Additional Constraint
 
 ```math
 \begin{aligned}
@@ -205,11 +210,6 @@ Besides regular constraints, the same-day delivery services has a user-specified
 ##### Explanation of constraint
 
 9. Ensure that the vehicle arrives within the delivery window.
-
-#### Priority Score $P_o$
-
-- **Amazon Fresh**: the priority score $P_o$ is defined by a boolean value that indicates whether order $o$ contain perishable items or not.
-- **Prime Now**: the priority score is set to $0$ exclusively. (not in use)
 
 ## References
 
